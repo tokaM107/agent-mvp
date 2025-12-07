@@ -1,0 +1,193 @@
+route_id,service_id,trip_headsign,direction_id,shape_id,trip_id
+I46ZQc9g0OMvTpnnq0RXs,Ground_Daily,Asafra,1,OvxARhItfijPV-_xuvfnZ_Shape,OvxARhItfijPV-_xuvfnZ-07:00:00
+tv4mLSYvBC5Q4aSnL5h83,Ground_Daily,Asafra,1,zivMUtHDofqSlzEUoK8F0_Shape,zivMUtHDofqSlzEUoK8F0-07:00:00
+d591FuxnMulU7vr6uNxrB,Ground_Daily,Asafra,0,Wq0wtD2-ddsT-JtVfCc3g_Shape,Wq0wtD2-ddsT-JtVfCc3g-07:00:00
+ruQq1su0J7bVhBjmIi2kw,Ground_Daily,Asafra,1,OI7bd_u7laDmk8SxgppK0_Shape,OI7bd_u7laDmk8SxgppK0-07:00:00
+dpTyJ7ihIOXu0gGo2F3iz,Ground_Daily,Asafra,1,I2ar40PiiuS-HMI9_KCLc_Shape,I2ar40PiiuS-HMI9_KCLc-07:00:00
+aeeOOe3-Dtz86MK-Ltc0F,Ground_Daily,Asafra,1,7PVy-xzsAclt9bvyLn2D__Shape,7PVy-xzsAclt9bvyLn2D_-07:00:00
+5NjpP8xmvr1-OYnw7E5Jn,Ground_Daily,El-Mansheya,0,wyt-c9kVSmo-uyx4zLFYT_Shape,wyt-c9kVSmo-uyx4zLFYT-07:00:00
+E14B9x9RNkVqAHJvJBYqa,Ground_Daily,El-Mansheya,0,tXwMswYEHusmu2vLfRPR2_Shape,tXwMswYEHusmu2vLfRPR2-07:00:00
+hx4EeoLjM7NJfnYrVfGvk,Ground_Daily,Al-Rahma,0,cURs_PxThe2b2znIGFxQs_Shape,cURs_PxThe2b2znIGFxQs-07:00:00
+2z926Q9o3YtgjyoxtMW1d,Ground_Daily,El-Mansheya,0,keUygmfQjUMNwNeSanmRs_Shape,keUygmfQjUMNwNeSanmRs-07:00:00
+ruQq1su0J7bVhBjmIi2kw,Ground_Daily,El-Mansheya,0,_xaRNY3_AfOnhpf5yTE3A_Shape,_xaRNY3_AfOnhpf5yTE3A-07:00:00
+eW27jXPyPLkZFOoF5g9lr,Ground_Daily,Train Station (El-Shohada Square),1,kKR0i-pEBtj87zRv8vRz5_Shape,kKR0i-pEBtj87zRv8vRz5-07:00:00
+o8mSXE7IgJWToUsU4NnFr,Ground_Daily,El-Mansheya,0,40rOFL2qzN26P2ty7q_b9_Shape,40rOFL2qzN26P2ty7q_b9-07:00:00
+FaHumA7HIyjyuC7E4M1jZ,Ground_Daily,El-Mansheya,0,nnllgPNq1yuc-OXURFNAG_Shape,nnllgPNq1yuc-OXURFNAG-07:00:00
+ndixtJMAJzaQiITLSzYz_,Ground_Daily,Al-Seyouf (Falaky),1,tl8ZQbvleCGCbWdgkRkZg_Shape,tl8ZQbvleCGCbWdgkRkZg-07:00:00
+W1YoMQsS8c1ZcZdd_AJ4R,Ground_Daily,Izbat Hawd 10,0,vt5LHnmnnLuQC-tEARuAL_Shape,vt5LHnmnnLuQC-tEARuAL-07:00:00
+yX2mhzfbx4_bbd2DANmLp,Ground_Daily,Izbat Hawd 12,0,RpKdfStaPAyjOjNE_OGG9_Shape,RpKdfStaPAyjOjNE_OGG9-07:00:00
+DKfQEdGZMwRbkHDkrwcPx,Ground_Daily,El-Mansheya,1,t3fihouAmNU32d_e7msfe_Shape,t3fihouAmNU32d_e7msfe-07:00:00
+xkITynYnba-VdPTlpu5kL,Ground_Daily,El-Mansheya,1,9ByH2YQ54cshi1Sj8kgPQ_Shape,9ByH2YQ54cshi1Sj8kgPQ-07:00:00
+lbr0LeYaqC-PO2eSd5dsH,Ground_Daily,El-Mansheya,0,EglZxh1NkJA5Jax303ARy_Shape,EglZxh1NkJA5Jax303ARy-07:00:00
+O-PLpyiKLXCmTOTN2ykl2,Ground_Daily,El-Mansheya,1,fZK7Eo97quKfWNkbl9oTR_Shape,fZK7Eo97quKfWNkbl9oTR-07:00:00
+rJNlVBeJYLnin9iUCfQ8_,Ground_Daily,El-Mansheya,1,3SynmEGmJSDoBYRTRgEkj_Shape,3SynmEGmJSDoBYRTRgEkj-07:00:00
+7udRe7A9ekRD6rtEEN_uD,Ground_Daily,El-Mansheya,1,M-k1V2EbMTbdd6jCLeoZw_Shape,M-k1V2EbMTbdd6jCLeoZw-07:00:00
+kdziSzfhBj4JiBeVoloxo,Ground_Daily,El-Mansheya,1,rz-CFcB9J3xy60VYWjZAn_Shape,rz-CFcB9J3xy60VYWjZAn-07:00:00
+xg6X_6yI3-x6agQaIKy0r,Ground_Daily,El-Mansheya,1,1pTTdCYNksTHRhSFGpg76_Shape,1pTTdCYNksTHRhSFGpg76-07:00:00
+TPxz_LmHA0qyDz7QFLo1e,Ground_Daily,El-Awayed,1,jWBg8TvwT24t5ID8oRKxt_Shape,jWBg8TvwT24t5ID8oRKxt-07:00:00
+ndixtJMAJzaQiITLSzYz_,Ground_Daily,El-Awayed,0,6d2W3a35jKEGSEjY9OqMB_Shape,6d2W3a35jKEGSEjY9OqMB-07:00:00
+2vubw4wDlR7h4SuBBiS6p,Ground_Daily,El-Awayed,0,bSYN2peHxalSinpb8v_ie_Shape,bSYN2peHxalSinpb8v_ie-07:00:00
+FaHumA7HIyjyuC7E4M1jZ,Ground_Daily,El-Awayed,1,dWfTv7gA4CztWg-ijXkTe_Shape,dWfTv7gA4CztWg-ijXkTe-07:00:00
+QKCnSGkAqgRmQ4fUeYRP-,Ground_Daily,El-Awayed,1,Ass95AtKKd_cJzSpFbbks_Shape,Ass95AtKKd_cJzSpFbbks-07:00:00
+EYuJpRuohnv2M2djd0oRb,Ground_Daily,Abis 8,0,r6ovFR4tIxNGXdkL4UeVE_Shape,r6ovFR4tIxNGXdkL4UeVE-07:00:00
+2HEouGQcgjyXwlsq69h3S,Ground_Daily,El-Awayed,0,KmoDyTTsPPrzF7JK4J700_Shape,KmoDyTTsPPrzF7JK4J700-07:00:00
+vToQ2sD35oGmngQzvKN9j,Ground_Daily,El-Awayed,1,xDj2dqi2X96UqHuyUcyqS_Shape,xDj2dqi2X96UqHuyUcyqS-07:00:00
+-Z1R0bmP-3IQrktLaw1-i,Ground_Daily,El-Awayed,0,TufBf34AgKUOdqfLpoq9__Shape,TufBf34AgKUOdqfLpoq9_-07:00:00
+4xf9KaKYJRkSlWjtAzeER,Ground_Daily,El-Awayed,1,CHPoO06l96ZxXNoM4s7El_Shape,CHPoO06l96ZxXNoM4s7El-07:00:00
+DaGuT_I6g5QpO40EcF4u7,Ground_Daily,El-Awayed,1,uOo5ud2_KAT6G_nCjg9oe_Shape,uOo5ud2_KAT6G_nCjg9oe-07:00:00
+CTJ48OMS2Nn2CyW093CBk,Ground_Daily,El-Awayed,0,YBp1JQ-cSPCXIHQQ34CmD_Shape,YBp1JQ-cSPCXIHQQ34CmD-07:00:00
+tMb6GY09D_zaob3QQV8vM,Ground_Daily,El-Awayed,1,0I4f41gSbP4Nhu5ZbZZGv_Shape,0I4f41gSbP4Nhu5ZbZZGv-07:00:00
+lgA0Qn219kk386RQHCTQ7,Ground_Daily,El-Awayed,1,mOAyR9hC46n6ORhDBT2l7_Shape,mOAyR9hC46n6ORhDBT2l7-07:00:00
+ClWtD9M5huTs0JiR087X6,Ground_Daily,Karmus,0,iUaEgr0LK4VOSZFkdzur6_Shape,iUaEgr0LK4VOSZFkdzur6-07:00:00
+edXbrlxHb468dADNBXJ2G,Ground_Daily,Sidi Bishr Tram ,1,3wTFymMNfLvqoIaC8VkMX_Shape,3wTFymMNfLvqoIaC8VkMX-07:00:00
+uZVFCkC8Mu4Badqh_vUBE,Ground_Daily,El-Sa'ah (Clock Square),0,7oFBV_-FjsLDgC5o68Mli_Shape,7oFBV_-FjsLDgC5o68Mli-07:00:00
+rff5rfv-fQCJyBaPUiuhB,Ground_Daily,El-Sa'ah (Clock Square),1,ofLnCLGBqlPSHxiB_6HP7_Shape,ofLnCLGBqlPSHxiB_6HP7-07:00:00
+dpTyJ7ihIOXu0gGo2F3iz,Ground_Daily,El-Sa'ah (Clock Square),0,wlRSKsJwTRTrfl4QBCwtY_Shape,wlRSKsJwTRTrfl4QBCwtY-07:00:00
+o8mSXE7IgJWToUsU4NnFr,Ground_Daily,El-Sa'ah (Clock Square),1,RbB2w0p-_BgwRa6AbSa-b_Shape,RbB2w0p-_BgwRa6AbSa-b-07:00:00
+V-tNyPwMd_7j2AAdXrBPe,Ground_Daily,El-Sa'ah (Clock Square),1,JjBliHamEx0YUxbao3vZS_Shape,JjBliHamEx0YUxbao3vZS-07:00:00
+fB7NaX7GmaEe7N8SDajYa,Ground_Daily,El-Sa'ah (Clock Square),1,q_FpxkrHACQ0njq87xh7H_Shape,q_FpxkrHACQ0njq87xh7H-07:00:00
+QKCnSGkAqgRmQ4fUeYRP-,Ground_Daily,El-Sa'ah (Clock Square),0,K63Xp_QNyqIIHRQrSOVNB_Shape,K63Xp_QNyqIIHRQrSOVNB-07:00:00
+BKzwbCqAolUfyoXfpTwIC,Ground_Daily,El-Sa'ah (Clock Square),1,tL1NRyqKwJOCmUECmIQqO_Shape,tL1NRyqKwJOCmUECmIQqO-07:00:00
+6Jzbm71jwnmQuuO9P7ngg,Ground_Daily,Hanuvil,0,HcF2oktSKDVQXpBv7t2j3_Shape,HcF2oktSKDVQXpBv7t2j3-07:00:00
+KNOT7t80YXwsfYupjUiTk,Ground_Daily,Hanuvil,0,6OIx6bTrieeeSM5cAiCs-_Shape,6OIx6bTrieeeSM5cAiCs--07:00:00
+dzTiXNOiyKbSpiehbFk-a,Ground_Daily,Hanuvil,0,xxgi7P3OGoDShZ0IAQUyL_Shape,xxgi7P3OGoDShZ0IAQUyL-07:00:00
+8CWoTtootKoeWNjoE5oOP,Ground_Daily,Hanuvil,0,QyDZF4yDNAntbYpYmjfxj_Shape,QyDZF4yDNAntbYpYmjfxj-07:00:00
+QcjXCusjL37XD0vtFPM_z,Ground_Daily,Train Station (El-Shohada Square),0,K1fkkoXPyuSsmQKdjzWHd_Shape,K1fkkoXPyuSsmQKdjzWHd-07:00:00
+dzTiXNOiyKbSpiehbFk-a,Ground_Daily,Train Station (El-Shohada Square),1,zZPK942_z42ZWwqb9a3ED_Shape,zZPK942_z42ZWwqb9a3ED-07:00:00
+EvMcmidrqDryWEcBEqdU2,Ground_Daily,Train Station (El-Shohada Square),0,x4ViZBh3xZ7dXQ23JVcoJ_Shape,x4ViZBh3xZ7dXQ23JVcoJ-07:00:00
+EqpMMSAPpyyeIs0OPJu7A,Ground_Daily,Train Station (El-Shohada Square),0,FUo5FExiKwUTpyTUJYA7R_Shape,FUo5FExiKwUTpyTUJYA7R-07:00:00
+V-tNyPwMd_7j2AAdXrBPe,Ground_Daily,Train Station (El-Shohada Square),0,WWP7DCP2cjGJxPZSN68Y2_Shape,WWP7DCP2cjGJxPZSN68Y2-07:00:00
+wk7z0bHFULyZrQtvEvO1X,Ground_Daily,Train Station (El-Shohada Square),1,yKUP1GAjkqmvJPLe6dDUV_Shape,yKUP1GAjkqmvJPLe6dDUV-07:00:00
+d1tk5YD606wPnGF4CLm4i,Ground_Daily,El-Mawqaf El-Geded,0,APpubImR-DQ7ipx8VqTDi_Shape,APpubImR-DQ7ipx8VqTDi-07:00:00
+2HEouGQcgjyXwlsq69h3S,Ground_Daily,Train Station (El-Shohada Square),1,9iBvMMprqaal91Eesle9O_Shape,9iBvMMprqaal91Eesle9O-07:00:00
+SqToUMEw-z1wSe52v0JGh,Ground_Daily,Train Station (El-Shohada Square),1,4QUtLrt9QqoQBADynOzAM_Shape,4QUtLrt9QqoQBADynOzAM-07:00:00
+p2DY4x4NaqXRC1gG9cwiY,Ground_Daily,Train Station (El-Shohada Square),1,fdkp3odv3VaA2gaEksu3i_Shape,fdkp3odv3VaA2gaEksu3i-07:00:00
+w5lnA7aOkl9RbW6RzoEdG,Ground_Daily,Train Station (El-Shohada Square),0,GK-B6ExLThapIsC2LwCU5_Shape,GK-B6ExLThapIsC2LwCU5-07:00:00
+0fV-oHdZjqIXEVAq-5E7b,Ground_Daily,Train Station (El-Shohada Square),0,t2ZpJUKX5uFrXD9bfRgqq_Shape,t2ZpJUKX5uFrXD9bfRgqq-07:00:00
+ujMXATExhhRj9qgxcopKv,Ground_Daily,Train Station (El-Shohada Square),1,oL-cc2-4cc5VXM7r-ShUc_Shape,oL-cc2-4cc5VXM7r-ShUc-07:00:00
+z2W-2EVP76_5pF_4R0HbR,Ground_Daily,Train Station (El-Shohada Square),1,pQ45GdSgOyF1CMHTWPmrk_Shape,pQ45GdSgOyF1CMHTWPmrk-07:00:00
+Rx10-oSKyoIJDvbVd1Py3,Ground_Daily,Train Station (El-Shohada Square),1,hCtxqlnqMmikZr4cnUgjF_Shape,hCtxqlnqMmikZr4cnUgjF-07:00:00
+EYuJpRuohnv2M2djd0oRb,Ground_Daily,Train Station (El-Shohada Square),1,eZVkbWyfsnRxGOMkDoSfl_Shape,eZVkbWyfsnRxGOMkDoSfl-07:00:00
+q-9QC-QKVmhqbVh9htKhg,Ground_Daily,Victoria station,1,WZZbrVYSieTbnoHnb0AaQ_Shape,WZZbrVYSieTbnoHnb0AaQ-07:00:00
+4xf9KaKYJRkSlWjtAzeER,Ground_Daily,Victoria station,0,o9FR1QzxiDSovwQlc0MKb_Shape,o9FR1QzxiDSovwQlc0MKb-07:00:00
+KNOT7t80YXwsfYupjUiTk,Ground_Daily,El-Mawqaf El-Geded,1,dLkT29EUoWOal9hGBCA4x_Shape,dLkT29EUoWOal9hGBCA4x-07:00:00
+-Z1R0bmP-3IQrktLaw1-i,Ground_Daily,Sidi Gabir,1,Da9EIaUt19ZSMI3qwGvzZ_Shape,Da9EIaUt19ZSMI3qwGvzZ-07:00:00
+6Jzbm71jwnmQuuO9P7ngg,Ground_Daily,Al-Seyouf (Falaky),1,wzQQv79eeOAEsj4p6t-wx_Shape,wzQQv79eeOAEsj4p6t-wx-07:00:00
+QcjXCusjL37XD0vtFPM_z,Ground_Daily,Al-Seyouf (Falaky),1,4dazyxD50LYtjM4jq9_Ot_Shape,4dazyxD50LYtjM4jq9_Ot-07:00:00
+tv4mLSYvBC5Q4aSnL5h83,Ground_Daily,El-Mawqaf El-Geded,0,Hn0eoDFbdIiLk49QaqFeX_Shape,Hn0eoDFbdIiLk49QaqFeX-07:00:00
+2z926Q9o3YtgjyoxtMW1d,Ground_Daily,El-Mawqaf El-Geded,1,v4sHde8sXh63a1CWeshcp_Shape,v4sHde8sXh63a1CWeshcp-07:00:00
+rff5rfv-fQCJyBaPUiuhB,Ground_Daily,El-Mawqaf El-Geded,0,v6Tq-fJZg1OTVvR_yhueB_Shape,v6Tq-fJZg1OTVvR_yhueB-07:00:00
+EvMcmidrqDryWEcBEqdU2,Ground_Daily,El-Mawqaf El-Geded,1,DQG7BcWUYPP3fo9nY8SBc_Shape,DQG7BcWUYPP3fo9nY8SBc-07:00:00
+2vubw4wDlR7h4SuBBiS6p,Ground_Daily,El-Mawqaf El-Geded,1,f33WNkS3h2sqBmb32LsDI_Shape,f33WNkS3h2sqBmb32LsDI-07:00:00
+nd53PomhCqmjY7ykLQy83,Ground_Daily,El-Mawqaf El-Geded,1,3CgzuUO_dn1teCfMyugyc_Shape,3CgzuUO_dn1teCfMyugyc-07:00:00
+bAytab6a3g8pFmPeUQC1L,Ground_Daily,El-Mawqaf El-Geded,1,tObSXctDA10XZJ6oW1EYp_Shape,tObSXctDA10XZJ6oW1EYp-07:00:00
+I4AY9d0_JCb661dki5jy7,Ground_Daily,El-Mawqaf El-Geded,1,nYPyDFvmKgS3bcDV6-0-U_Shape,nYPyDFvmKgS3bcDV6-0-U-07:00:00
+lQGthxPF7d3FXnmoZFGLV,Ground_Daily,El-Mawqaf El-Geded,0,qZcHenAJ7pJVpkcbhNg9l_Shape,qZcHenAJ7pJVpkcbhNg9l-07:00:00
+E_oc6kDbFdlvVaZssBQex,Ground_Daily,Kabo,0,3DsaT0dcW0e0BLcyD3Q6E_Shape,3DsaT0dcW0e0BLcyD3Q6E-07:00:00
+XxUPXIlZHVjWT_a7YqhHy,Ground_Daily,El-Mawqaf El-Geded,1,CmIaLLjNex2vbIMiilGN5_Shape,CmIaLLjNex2vbIMiilGN5-07:00:00
+NwvVKB38LtB63C0PtEo-i,Ground_Daily,El-Mawqaf El-Geded,1,zZjzzNbMESUGofW2jqGDZ_Shape,zZjzzNbMESUGofW2jqGDZ-07:00:00
+0fV-oHdZjqIXEVAq-5E7b,Ground_Daily,Kilo 21,1,U_QqLo01UyKjXo_inGS9s_Shape,U_QqLo01UyKjXo_inGS9s-07:00:00
+zwjvZyv-K7qfVyipl6li5,Ground_Daily,El-Mawqaf El-Geded,1,3g4cs6y1Zst9EwOYH-YQE_Shape,3g4cs6y1Zst9EwOYH-YQE-07:00:00
+dC4CWsX_TbK9g5r1kzt4S,Ground_Daily,El-Mandara,1,9LVHJSd6OMdlCKboaE00V_Shape,9LVHJSd6OMdlCKboaE00V-07:00:00
+I46ZQc9g0OMvTpnnq0RXs,Ground_Daily,Sidi Bishr,0,7OIDYqQb_VCEwYHFGH_e5_Shape,7OIDYqQb_VCEwYHFGH_e5-07:00:00
+8CWoTtootKoeWNjoE5oOP,Ground_Daily,Sidi Gabir,1,gSfwa8Ce0UZivfHRgFQmi_Shape,gSfwa8Ce0UZivfHRgFQmi-07:00:00
+d1tk5YD606wPnGF4CLm4i,Ground_Daily,Sidi Gabir,1,-vGMBy-ffWWJVczaRlv5z_Shape,-vGMBy-ffWWJVczaRlv5z-07:00:00
+BKzwbCqAolUfyoXfpTwIC,Ground_Daily,Sidi Gabir,0,z8pSD1wGRKg4oVh4eC0Iw_Shape,z8pSD1wGRKg4oVh4eC0Iw-07:00:00
+50n7_gqFiIrgeNHtVzwF0,Ground_Daily,Sidi Gabir,0,r7hUDDmUQxs4nQXOpk7pC_Shape,r7hUDDmUQxs4nQXOpk7pC-07:00:00
+lQGthxPF7d3FXnmoZFGLV,Ground_Daily,Kilo 21,1,YhJAaZa87Cn-vbr4gAMuB_Shape,YhJAaZa87Cn-vbr4gAMuB-07:00:00
+50n7_gqFiIrgeNHtVzwF0,Ground_Daily,Kilo 21,1,ZBtB-FXg8HG9MZ8swYNuQ_Shape,ZBtB-FXg8HG9MZ8swYNuQ-07:00:00
+BDGXXpou9Eb38xEVTNUs2,Ground_Daily,Kilo 21,1,lMQXKFc6iKvul6yn9yxiz_Shape,lMQXKFc6iKvul6yn9yxiz-07:00:00
+_RCpDqcLlmzJHSPPy8bli,Ground_Daily,Kilo 21,1,pvjC2m5XDlTvQWgPayp9C_Shape,pvjC2m5XDlTvQWgPayp9C-07:00:00
+bAytab6a3g8pFmPeUQC1L,Ground_Daily,Bahary (Ras Al-Tin),0,5gdYQVlYNdFvy7jCqIDu7_Shape,5gdYQVlYNdFvy7jCqIDu7-07:00:00
+wk7z0bHFULyZrQtvEvO1X,Ground_Daily,Bahary (Ras Al-Tin),0,RHazPXn1EQ_y4RbVe6HYc_Shape,RHazPXn1EQ_y4RbVe6HYc-07:00:00
+Jahu5bHSRsdCyh3p5H6cJ,Ground_Daily,Bahary (Ras Al-Tin),1,d84WDadbu5AjbQpkTV2r4_Shape,d84WDadbu5AjbQpkTV2r4-07:00:00
+E_oc6kDbFdlvVaZssBQex,Ground_Daily,Bahary (Ras Al-Tin),1,zu8jTrRbozlA63gSOD4cA_Shape,zu8jTrRbozlA63gSOD4cA-07:00:00
+I4AY9d0_JCb661dki5jy7,Ground_Daily,Amreyya,0,N7niHD4FSKKz4wzURqkFW_Shape,N7niHD4FSKKz4wzURqkFW-07:00:00
+p2DY4x4NaqXRC1gG9cwiY,Ground_Daily,Amreyya,0,iHxp5k-_O7q56ncOSt9aW_Shape,iHxp5k-_O7q56ncOSt9aW-07:00:00
+cQIW-LxFXCIuxPpIw4MR2,Ground_Daily,Amreyya,0,AOVtM-9TZ3fXGgaCnC-sH_Shape,AOVtM-9TZ3fXGgaCnC-sH-07:00:00
+BDGXXpou9Eb38xEVTNUs2,Ground_Daily,Amreyya,0,025LCvbNrkhPcZFND6SfE_Shape,025LCvbNrkhPcZFND6SfE-07:00:00
+XxUPXIlZHVjWT_a7YqhHy,Ground_Daily,Al-Bitash,0,JR4I2_wTJ2Vb9ocgkUSNB_Shape,JR4I2_wTJ2Vb9ocgkUSNB-07:00:00
+z2W-2EVP76_5pF_4R0HbR,Ground_Daily,Al-Bitash,0,xb8d2kdOwmERjQmCcjbyQ_Shape,xb8d2kdOwmERjQmCcjbyQ-07:00:00
+NwvVKB38LtB63C0PtEo-i,Ground_Daily,Shatibi,0,c1YDpOopAR200ZEPZGL2D_Shape,c1YDpOopAR200ZEPZGL2D-07:00:00
+d591FuxnMulU7vr6uNxrB,Ground_Daily,Hadra,1,pLOjOa2QgHvzgt6C_kcel_Shape,pLOjOa2QgHvzgt6C_kcel-07:00:00
+zwjvZyv-K7qfVyipl6li5,Ground_Daily,Borg El Arab Al Arbaneyat Prison,0,kGJ35g79BU1ao8aW7duYA_Shape,kGJ35g79BU1ao8aW7duYA-07:00:00
+w5lnA7aOkl9RbW6RzoEdG,Ground_Daily,Hadra,1,LrAbpnGcNy8Ljz0FMNTPN_Shape,LrAbpnGcNy8Ljz0FMNTPN-07:00:00
+nd53PomhCqmjY7ykLQy83,Ground_Daily,El-Mandara,0,NP0r90PJ04dzhZ4-fQdAY_Shape,NP0r90PJ04dzhZ4-fQdAY-07:00:00
+fB7NaX7GmaEe7N8SDajYa,Ground_Daily,El-Mandara,0,RNLlNLhCvrplPJ1T6Rv3G_Shape,RNLlNLhCvrplPJ1T6Rv3G-07:00:00
+Jahu5bHSRsdCyh3p5H6cJ,Ground_Daily,El-Mandara,0,J3ADe7YQWUaBHH8Z_00Ou_Shape,J3ADe7YQWUaBHH8Z_00Ou-07:00:00
+vToQ2sD35oGmngQzvKN9j,Ground_Daily,El-Mandara,0,cPH8TY_FP2nMGpFWXqpQb_Shape,cPH8TY_FP2nMGpFWXqpQb-07:00:00
+5NjpP8xmvr1-OYnw7E5Jn,Ground_Daily,Sidi Bishr,1,Tv3p8704smtFY_z3ZHnnb_Shape,Tv3p8704smtFY_z3ZHnnb-07:00:00
+uZVFCkC8Mu4Badqh_vUBE,Ground_Daily,Sidi Bishr,1,BSHIbLq-S_VbTLPj0f5S7_Shape,BSHIbLq-S_VbTLPj0f5S7-07:00:00
+8NzGmmMDzhEhQEXbQjJTl,Ground_Daily,Sidi Bishr,1,H4Zrbg3RLebdgA2rD0SL4_Shape,H4Zrbg3RLebdgA2rD0SL4-07:00:00
+O-PLpyiKLXCmTOTN2ykl2,Ground_Daily,Smouha,0,gp93eQ2WYNnUOJrA17bFP_Shape,gp93eQ2WYNnUOJrA17bFP-07:00:00
+ClWtD9M5huTs0JiR087X6,Ground_Daily,Sidi Bishr,1,Rr5VrNghCMV3A0qeyJoVf_Shape,Rr5VrNghCMV3A0qeyJoVf-07:00:00
+edXbrlxHb468dADNBXJ2G,Ground_Daily,Sidi Bishr,0,gNGHM_FUxY2cAKLH9-ILE_Shape,gNGHM_FUxY2cAKLH9-ILE-07:00:00
+rJNlVBeJYLnin9iUCfQ8_,Ground_Daily,Hagar Al-Nawateyah (Namos Bridge),0,_npHlyCCY7o0R20RyqvT8_Shape,_npHlyCCY7o0R20RyqvT8-07:00:00
+DaGuT_I6g5QpO40EcF4u7,Ground_Daily,Hadra,0,mL3nX7_Swe2eUme5B7Ufy_Shape,mL3nX7_Swe2eUme5B7Ufy-07:00:00
+lbr0LeYaqC-PO2eSd5dsH,Ground_Daily,Ezbet Saad,1,gqntW1mb4ahLW_IHlR39R_Shape,gqntW1mb4ahLW_IHlR39R-07:00:00
+xg6X_6yI3-x6agQaIKy0r,Ground_Daily,Abo Soliman,0,PAh8O-96IhPU2mfK1XGjm_Shape,PAh8O-96IhPU2mfK1XGjm-07:00:00
+DKfQEdGZMwRbkHDkrwcPx,Ground_Daily,Abu Qir,0,udcnz_0kW2tOMy6xB2_Ng_Shape,udcnz_0kW2tOMy6xB2_Ng-07:00:00
+eW27jXPyPLkZFOoF5g9lr,Ground_Daily,Airport,0,Bir76FY1196m5b2RCrotL_Shape,Bir76FY1196m5b2RCrotL-07:00:00
+3I93k-8Viq6W8QFXbpmUU,Ground_Daily,El-Rassafa,0,U5q_TMc5BJ7jtZPVBLLIC_Shape,U5q_TMc5BJ7jtZPVBLLIC-07:00:00
+SqToUMEw-z1wSe52v0JGh,Ground_Daily,Abu Qir,0,MrihzTWrnXBOK-ItJhoR8_Shape,MrihzTWrnXBOK-ItJhoR8-07:00:00
+dC4CWsX_TbK9g5r1kzt4S,Ground_Daily,Abu Qir,0,34nbNemVSy5O0QhQ5utuQ_Shape,34nbNemVSy5O0QhQ5utuQ-07:00:00
+7udRe7A9ekRD6rtEEN_uD,Ground_Daily,Bakus,0,wE7GlW3Fb_HPAB66Hhxh1_Shape,wE7GlW3Fb_HPAB66Hhxh1-07:00:00
+lgA0Qn219kk386RQHCTQ7,Ground_Daily,Bakus,0,-Q2gVX9GgVSEtVr-yv6Nf_Shape,-Q2gVX9GgVSEtVr-yv6Nf-07:00:00
+kdziSzfhBj4JiBeVoloxo,Ground_Daily,Green Plaza Mall,0,6LBLdjAw8E6T2OCvlWEr8_Shape,6LBLdjAw8E6T2OCvlWEr8-07:00:00
+tMb6GY09D_zaob3QQV8vM,Ground_Daily,Al-Maraghi,0,1v5hAqd3R5NHO2_mRDJ3z_Shape,1v5hAqd3R5NHO2_mRDJ3z-07:00:00
+ujMXATExhhRj9qgxcopKv,Ground_Daily,Street 45,0,qGoxkcgxJLIYDgVV9cYQ6_Shape,qGoxkcgxJLIYDgVV9cYQ6-07:00:00
+Rx10-oSKyoIJDvbVd1Py3,Ground_Daily,Abu Youssef,0,BxVJu5Cu3SBv6k6JEotw3_Shape,BxVJu5Cu3SBv6k6JEotw3-07:00:00
+_RCpDqcLlmzJHSPPy8bli,Ground_Daily,Raml Station,0,znJ4UDxPXmPvAbkcg1zot_Shape,znJ4UDxPXmPvAbkcg1zot-07:00:00
+pIaHBI4j1KA7mIDUenoKC,Ground_Daily,Abd El-Qader Al-Gadida,0,_roD5BmPMzsusHgRuqc29_Shape,_roD5BmPMzsusHgRuqc29-07:00:00
+T6BRc19d7TrtHQroCLymy,Ground_Daily,Hanuvil Gameyya,0,o1-MNGEnaLwUnghnqO6JK_Shape,o1-MNGEnaLwUnghnqO6JK-07:00:00
+LrIznn0Nk3YYvE6SV4NT_,Ground_Daily,Train Station (El-Shohada Square),1,3JTmhQmnxSU9cPkJSaSlE_Shape,3JTmhQmnxSU9cPkJSaSlE-07:00:00
+LrIznn0Nk3YYvE6SV4NT_,Ground_Daily,Asafra,0,divI9MoAnOSksgYUNogFE_Shape,divI9MoAnOSksgYUNogFE-07:00:00
+hx4EeoLjM7NJfnYrVfGvk,Ground_Daily,El-Awayed,1,FOMSNPsGQO4s6Y-BM_cpQ_Shape,FOMSNPsGQO4s6Y-BM_cpQ-07:00:00
+o7ehON1F_k7JHoHJOQYGh,Ground_Daily,El-Sa'ah (Clock Square),0,1qykx9U9w6xm1N6GqnR-i_Shape,1qykx9U9w6xm1N6GqnR-i-07:00:00
+llujnjcOUaGBRa_Jecss3,Ground_Daily,El-Sa'ah (Clock Square),1,TIF4utcDqnWmdbkuyp9Dq_Shape,TIF4utcDqnWmdbkuyp9Dq-07:00:00
+VqsKdXjc_nTkIE8PZUK7V,Ground_Daily,Asafra,0,OVbnm1WLeW59vl_wEqm66_Shape,OVbnm1WLeW59vl_wEqm66-07:00:00
+RSdPdtwiGzlvedMSUpA36,Ground_Daily,El-Awayed,1,8wpT6YlGJmfsskCDg8AJT_Shape,8wpT6YlGJmfsskCDg8AJT-07:00:00
+T7uwVnYTnWKajNK7K5gyj,Ground_Daily,El-Sa'ah (Clock Square),1,wNQ0rq7CAxb57IWuH3MiT_Shape,wNQ0rq7CAxb57IWuH3MiT-07:00:00
+9Ge1SSHI5IgHaGIK61A7q,Ground_Daily,El-Sa'ah (Clock Square),1,0eMropKVlaFEwtKn18KiF_Shape,0eMropKVlaFEwtKn18KiF-07:00:00
+VqsKdXjc_nTkIE8PZUK7V,Ground_Daily,Train Station (El-Shohada Square),1,GVMY3J8hLKwB3k_XzZZNA_Shape,GVMY3J8hLKwB3k_XzZZNA-07:00:00
+pIaHBI4j1KA7mIDUenoKC,Ground_Daily,Train Station (El-Shohada Square),1,nilFxlyYPYNiAZui3Rdkw_Shape,nilFxlyYPYNiAZui3Rdkw-07:00:00
+XQFjzrlmVSDo00hpPwPD9,Ground_Daily,Hanuvil,0,q5Lba_fHFYAVYTctbEVvL_Shape,q5Lba_fHFYAVYTctbEVvL-07:00:00
+djf-0ENVceYNg5x6O7HGq,Ground_Daily,Train Station (El-Shohada Square),1,vDSOGaI-kcPGIccVzFiRw_Shape,vDSOGaI-kcPGIccVzFiRw-07:00:00
+8ExRMTw-r4JAqxk8WGljD,Ground_Daily,Al-Seyouf (Falaky),1,E3cKTAI5hrMdq3gv0l-3g_Shape,E3cKTAI5hrMdq3gv0l-3g-07:00:00
+8ExRMTw-r4JAqxk8WGljD,Ground_Daily,Anfoshy,0,bAHUtWeGgy-NzZiHpbdim_Shape,bAHUtWeGgy-NzZiHpbdim-07:00:00
+oepuTc06iN5U0ZwjmqZIj,Ground_Daily,El-Mawqaf El-Geded,0,oVe9NWCir7yf4YumOIYpG_Shape,oVe9NWCir7yf4YumOIYpG-07:00:00
+D7IwqxPBMcEQiGv3sjC3s,Ground_Daily,Victoria station,1,e8t7gY08MS-f47GD5XH51_Shape,e8t7gY08MS-f47GD5XH51-07:00:00
+o7ehON1F_k7JHoHJOQYGh,Ground_Daily,Al-Seyouf (Falaky),1,jUSQ8Z6RmiugCcePQrJNM_Shape,jUSQ8Z6RmiugCcePQrJNM-07:00:00
+-H9LP4vuOqj-RIRCZNg_6,Ground_Daily,Sidi Gabir,0,TWnfYDX6BkJirORXmg2hv_Shape,TWnfYDX6BkJirORXmg2hv-07:00:00
+0WNbk9MGSKJVqVAWMBS1q,Ground_Daily,Anfoshy,1,uE28Zm5OTYg1GLECQDEL0_Shape,uE28Zm5OTYg1GLECQDEL0-07:00:00
+gboAfb13A28YhAJkt-Pkx,Ground_Daily,Kilo 21,0,4B_Jpa3Jm_xxCkTcY6IDN_Shape,4B_Jpa3Jm_xxCkTcY6IDN-07:00:00
+jmLM1TsmnRPlkOtGUD0nu,Ground_Daily,Anfoshy,1,Cl-oT7WLLDtvd9UF3t3WF_Shape,Cl-oT7WLLDtvd9UF3t3WF-07:00:00
+XQFjzrlmVSDo00hpPwPD9,Ground_Daily,Kilo 21,1,CoaLpd6rmb73R6BNYH7S1_Shape,CoaLpd6rmb73R6BNYH7S1-07:00:00
+-H9LP4vuOqj-RIRCZNg_6,Ground_Daily,Ezbet Saad,1,aL3IoFC8Ob46ci80-r5J__Shape,aL3IoFC8Ob46ci80-r5J_-07:00:00
+9nFu_lj836CKLSJUzjejg,Ground_Daily,Al-Wardiyan,0,28mrnCSEb3wYAsdtd50rU_Shape,28mrnCSEb3wYAsdtd50rU-07:00:00
+V_vEOLz-VvDvsJC4jk5JR,Ground_Daily,Amreyya,0,eVKw5V4GKYTFMFEU2cbKc_Shape,eVKw5V4GKYTFMFEU2cbKc-07:00:00
+oepuTc06iN5U0ZwjmqZIj,Ground_Daily,Quta (Soter),1,PyvMsU4izplRo5xNtmlK3_Shape,PyvMsU4izplRo5xNtmlK3-07:00:00
+9Ge1SSHI5IgHaGIK61A7q,Ground_Daily,Abo Soliman,0,Lz8EOh2wSW7Z4sNXrGPxw_Shape,Lz8EOh2wSW7Z4sNXrGPxw-07:00:00
+0WNbk9MGSKJVqVAWMBS1q,Ground_Daily,El-Mandara,0,EoBxLx54RiTmwf0L64PXs_Shape,EoBxLx54RiTmwf0L64PXs-07:00:00
+T7uwVnYTnWKajNK7K5gyj,Ground_Daily,Al-Maraghi,0,LLBFoYPGf2DhL6gStjpy4_Shape,LLBFoYPGf2DhL6gStjpy4-07:00:00
+djf-0ENVceYNg5x6O7HGq,Ground_Daily,El-Nasreya El-Qadema,0,Q3pD-7jCAvuSmNTpcaPvZ_Shape,Q3pD-7jCAvuSmNTpcaPvZ-07:00:00
+wh9cIxqRBTvvkxeMtkHAi,Ground_Daily,Shahr Al-Asal,0,p2LolNMw2UzYkCDS09TaM_Shape,p2LolNMw2UzYkCDS09TaM-07:00:00
+1Ctgvye_a8bTjvozOsfEX,Ground_Daily,Al-Maraghi,0,eI4I1CFyBUEYtwzc_6nqC_Shape,eI4I1CFyBUEYtwzc_6nqC-07:00:00
+jmLM1TsmnRPlkOtGUD0nu,Ground_Daily,Al-Milaha,0,R1qyf44TfvStHmjMCiKfC_Shape,R1qyf44TfvStHmjMCiKfC-07:00:00
+W1YoMQsS8c1ZcZdd_AJ4R,Ground_Daily,Al-Milaha,1,6u8t_kqOv1J6Cy4UiIRO__Shape,6u8t_kqOv1J6Cy4UiIRO_-07:00:00
+yX2mhzfbx4_bbd2DANmLp,Ground_Daily,Al-Milaha,1,OoyJYltTuIPwOrCeg2YmA_Shape,OoyJYltTuIPwOrCeg2YmA-07:00:00
+S8t0ygpYGRBLHfPC3bjJm,Ground_Daily,Khorshid,0,vcRbpsi4jjFjRKF41t1UT_Shape,vcRbpsi4jjFjRKF41t1UT-07:00:00
+V_vEOLz-VvDvsJC4jk5JR,Ground_Daily,Raml Station,1,Eij4wvz28UMMCWx_xBgPt_Shape,Eij4wvz28UMMCWx_xBgPt-07:00:00
+9nFu_lj836CKLSJUzjejg,Ground_Daily,El-Mansheya,1,uRBqBvtxqfFULY3Kyi78n_Shape,uRBqBvtxqfFULY3Kyi78n-07:00:00
+llujnjcOUaGBRa_Jecss3,Ground_Daily,El-Awayed,0,S0va0RZjlnA1UM5ngCuy9_Shape,S0va0RZjlnA1UM5ngCuy9-07:00:00
+D7IwqxPBMcEQiGv3sjC3s,Ground_Daily,El-Awayed,0,3RevHK5a3aJRhrnXG0U-Y_Shape,3RevHK5a3aJRhrnXG0U-Y-07:00:00
+1Ctgvye_a8bTjvozOsfEX,Ground_Daily,El-Awayed,1,Q_48FGPRTjaYgRz2H28V3_Shape,Q_48FGPRTjaYgRz2H28V3-07:00:00
+S8t0ygpYGRBLHfPC3bjJm,Ground_Daily,El-Awayed,1,w6teBIa3rLtCothzEDZKi_Shape,w6teBIa3rLtCothzEDZKi-07:00:00
+nl0Bhq5jfJUhmpghbnEaV,Ground_Daily,Train Station (El-Shohada Square),1,iGgUl6NwJYqGWhVkUHdiu_Shape,iGgUl6NwJYqGWhVkUHdiu-07:00:00
+2sefONCZ5v5w4bCF1ybYX,Ground_Daily,Train Station (El-Shohada Square),1,pCUExpIx94RHG6BGAhT6a_Shape,pCUExpIx94RHG6BGAhT6a-07:00:00
+hMo27Nx4A3lFCdh0tNdmf,Ground_Daily,Bahary (Ras Al-Tin),1,Z-51SkRkO5YyfPeYNTS-n_Shape,Z-51SkRkO5YyfPeYNTS-n-07:00:00
+EWmI2x176BtYHecDIWm2H,Ground_Daily,Bahary (Ras Al-Tin),1,vGWP0NAWQ2WwsR_DTpmn9_Shape,vGWP0NAWQ2WwsR_DTpmn9-07:00:00
+7vCDYOyx9Gj6RZuCS5Igi,Ground_Daily,Abu Qir,0,RmCIDxJQKwF7GOCKKX3Oh_Shape,RmCIDxJQKwF7GOCKKX3Oh-07:00:00
+hMo27Nx4A3lFCdh0tNdmf,Ground_Daily,Abu Qir,0,LYcY_J8e-Dijvjm6uZhgZ_Shape,LYcY_J8e-Dijvjm6uZhgZ-07:00:00
+EWmI2x176BtYHecDIWm2H,Ground_Daily,Street 45,0,bd7828viXdflnfuupm3s6_Shape,bd7828viXdflnfuupm3s6-07:00:00
+2sefONCZ5v5w4bCF1ybYX,Ground_Daily,Al-Milaha,0,0h48FVJYF7q0a-Fr5KoJ2_Shape,0h48FVJYF7q0a-Fr5KoJ2-07:00:00

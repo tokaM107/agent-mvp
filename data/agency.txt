@@ -1,0 +1,6 @@
+agency_id,agency_name,agency_url,agency_timezone
+P_B_8,Paratransit 8 Seater Suzuki Chevrolet or DMF (Blue Licenseplates),https://digitaltransport4africa.org/,Africa/Cairo
+P_O_14,Paratransit 14 Seater Microbus (Orange Licenseplates),https://digitaltransport4africa.org/,Africa/Cairo
+COOP,Cooperative paratransit 29 Seater (Grey Licenseplates),https://digitaltransport4africa.org/,Africa/Cairo
+Minibus,LTRA,https://digitaltransport4africa.org/,Africa/Cairo
+Bus,APTA,https://digitaltransport4africa.org/,Africa/Cairo

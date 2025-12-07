@@ -1,0 +1,105 @@
+route_id,agency_id,route_long_name,route_short_name,route_type,continuous_pickup,continuous_drop_off
+I46ZQc9g0OMvTpnnq0RXs,P_O_14,Asafra - Sidi Bishr,Microbus ,3,1,1
+tv4mLSYvBC5Q4aSnL5h83,P_O_14,Asafra - El-Mawqaf El-Geded,Microbus ,3,1,1
+d591FuxnMulU7vr6uNxrB,P_O_14,Asafra - Hadra,Microbus ,3,1,1
+ruQq1su0J7bVhBjmIi2kw,P_O_14,Asafra - El-Mansheya,Microbus ,3,1,1
+dpTyJ7ihIOXu0gGo2F3iz,P_O_14,Asafra - El-Sa'ah (Clock Square),Microbus ,3,1,1
+aeeOOe3-Dtz86MK-Ltc0F,P_O_14,Asafra - El-Awayed,Microbus ,3,1,1
+5NjpP8xmvr1-OYnw7E5Jn,P_O_14,El-Mansheya - Sidi Bishr,Microbus ,3,1,1
+E14B9x9RNkVqAHJvJBYqa,P_O_14,Al-Seyouf (Falaky) - El-Mansheya,Microbus ,3,1,1
+hx4EeoLjM7NJfnYrVfGvk,P_B_8,Al-Rahma - El-Awayed,Tomnaya ,3,1,1
+2z926Q9o3YtgjyoxtMW1d,P_O_14,El-Mansheya - El-Mawqaf El-Geded,Microbus ,3,1,1
+eW27jXPyPLkZFOoF5g9lr,P_O_14,Airport - Train Station (El-Shohada Square),Microbus ,3,1,1
+o8mSXE7IgJWToUsU4NnFr,P_O_14,El-Mansheya - El-Sa'ah (Clock Square),Microbus ,3,1,1
+FaHumA7HIyjyuC7E4M1jZ,P_O_14,El-Awayed - El-Mansheya,Microbus ,3,1,1
+ndixtJMAJzaQiITLSzYz_,P_O_14,Al-Seyouf (Falaky) - El-Awayed,Microbus ,3,1,1
+W1YoMQsS8c1ZcZdd_AJ4R,P_B_8,Al-Milaha - Izbat Hawd 10,Tomnaya ,3,1,1
+yX2mhzfbx4_bbd2DANmLp,P_B_8,Al-Milaha - Izbat Hawd 12,Tomnaya ,3,1,1
+DKfQEdGZMwRbkHDkrwcPx,P_O_14,Abu Qir - El-Mansheya,Microbus ,3,1,1
+xkITynYnba-VdPTlpu5kL,P_O_14,El-Mansheya - Victoria station,Microbus ,3,1,1
+lbr0LeYaqC-PO2eSd5dsH,P_O_14,El-Mansheya - Ezbet Saad,Microbus ,3,1,1
+O-PLpyiKLXCmTOTN2ykl2,P_O_14,El-Mansheya - Smouha,Microbus ,3,1,1
+rJNlVBeJYLnin9iUCfQ8_,P_O_14,El-Mansheya - Hagar Al-Nawateyah (Namos Bridge),Microbus ,3,1,1
+7udRe7A9ekRD6rtEEN_uD,P_O_14,Bakus - El-Mansheya,Microbus ,3,1,1
+kdziSzfhBj4JiBeVoloxo,P_O_14,El-Mansheya - Green Plaza Mall,Microbus ,3,1,1
+xg6X_6yI3-x6agQaIKy0r,P_O_14,Abo Soliman - El-Mansheya,Microbus ,3,1,1
+TPxz_LmHA0qyDz7QFLo1e,P_O_14,El-Awayed - Sidi Bishr,Microbus ,3,1,1
+2vubw4wDlR7h4SuBBiS6p,P_O_14,El-Awayed - El-Mawqaf El-Geded,Microbus ,3,1,1
+QKCnSGkAqgRmQ4fUeYRP-,P_O_14,El-Awayed - El-Sa'ah (Clock Square),Microbus ,3,1,1
+EYuJpRuohnv2M2djd0oRb,P_O_14,Abis 8 - Train Station (El-Shohada Square),Microbus ,3,1,1
+2HEouGQcgjyXwlsq69h3S,P_O_14,El-Awayed - Train Station (El-Shohada Square),Microbus ,3,1,1
+vToQ2sD35oGmngQzvKN9j,P_O_14,El-Awayed - El-Mandara,Microbus ,3,1,1
+-Z1R0bmP-3IQrktLaw1-i,P_O_14,El-Awayed - Sidi Gabir,Microbus ,3,1,1
+4xf9KaKYJRkSlWjtAzeER,P_O_14,El-Awayed - Victoria station,Microbus ,3,1,1
+DaGuT_I6g5QpO40EcF4u7,P_O_14,El-Awayed - Hadra,Microbus ,3,1,1
+CTJ48OMS2Nn2CyW093CBk,P_O_14,El-Awayed - Kilo 21,Microbus ,3,1,1
+tMb6GY09D_zaob3QQV8vM,P_O_14,Al-Maraghi - El-Awayed,Microbus ,3,1,1
+lgA0Qn219kk386RQHCTQ7,P_O_14,Bakus - El-Awayed,Microbus ,3,1,1
+ClWtD9M5huTs0JiR087X6,P_O_14,Karmus - Sidi Bishr,Microbus ,3,1,1
+edXbrlxHb468dADNBXJ2G,P_O_14,Sidi Bishr - Sidi Bishr Tram ,Microbus ,3,1,1
+uZVFCkC8Mu4Badqh_vUBE,P_O_14,El-Sa'ah (Clock Square) - Sidi Bishr,Microbus ,3,1,1
+rff5rfv-fQCJyBaPUiuhB,P_O_14,El-Mawqaf El-Geded - El-Sa'ah (Clock Square),Microbus ,3,1,1
+V-tNyPwMd_7j2AAdXrBPe,P_O_14,El-Sa'ah (Clock Square) - Train Station (El-Shohada Square),Microbus ,3,1,1
+fB7NaX7GmaEe7N8SDajYa,P_O_14,El-Mandara - El-Sa'ah (Clock Square),Microbus ,3,1,1
+BKzwbCqAolUfyoXfpTwIC,P_O_14,El-Sa'ah (Clock Square) - Sidi Gabir,Microbus ,3,1,1
+6Jzbm71jwnmQuuO9P7ngg,P_O_14,Al-Seyouf (Falaky) - Hanuvil,Microbus ,3,1,1
+KNOT7t80YXwsfYupjUiTk,P_O_14,El-Mawqaf El-Geded - Hanuvil,Microbus ,3,1,1
+dzTiXNOiyKbSpiehbFk-a,P_O_14,Hanuvil - Train Station (El-Shohada Square),Microbus ,3,1,1
+8CWoTtootKoeWNjoE5oOP,P_O_14,Hanuvil - Sidi Gabir,Microbus ,3,1,1
+QcjXCusjL37XD0vtFPM_z,P_O_14,Al-Seyouf (Falaky) - Train Station (El-Shohada Square),Microbus ,3,1,1
+EvMcmidrqDryWEcBEqdU2,P_O_14,El-Mawqaf El-Geded - Train Station (El-Shohada Square),Microbus ,3,1,1
+EqpMMSAPpyyeIs0OPJu7A,P_O_14,Asafra - Train Station (El-Shohada Square),Microbus ,3,1,1
+wk7z0bHFULyZrQtvEvO1X,P_O_14,Bahary (Ras Al-Tin) - Train Station (El-Shohada Square),Microbus ,3,1,1
+d1tk5YD606wPnGF4CLm4i,P_O_14,El-Mawqaf El-Geded - Sidi Gabir,Microbus ,3,1,1
+SqToUMEw-z1wSe52v0JGh,P_O_14,Abu Qir - Train Station (El-Shohada Square),Microbus ,3,1,1
+p2DY4x4NaqXRC1gG9cwiY,P_O_14,Amreyya - Train Station (El-Shohada Square),Microbus ,3,1,1
+w5lnA7aOkl9RbW6RzoEdG,P_O_14,Hadra - Train Station (El-Shohada Square),Microbus ,3,1,1
+0fV-oHdZjqIXEVAq-5E7b,P_O_14,Kilo 21 - Train Station (El-Shohada Square),Microbus ,3,1,1
+ujMXATExhhRj9qgxcopKv,P_O_14,Street 45 - Train Station (El-Shohada Square),Microbus ,3,1,1
+z2W-2EVP76_5pF_4R0HbR,P_O_14,Al-Bitash - Train Station (El-Shohada Square),Microbus ,3,1,1
+Rx10-oSKyoIJDvbVd1Py3,P_O_14,Abu Youssef - Train Station (El-Shohada Square),Microbus ,3,1,1
+q-9QC-QKVmhqbVh9htKhg,P_O_14,Al-Seyouf (Falaky) - Victoria station,Microbus ,3,1,1
+nd53PomhCqmjY7ykLQy83,P_O_14,El-Mandara - El-Mawqaf El-Geded,Microbus ,3,1,1
+bAytab6a3g8pFmPeUQC1L,P_O_14,Bahary (Ras Al-Tin) - El-Mawqaf El-Geded,Microbus ,3,1,1
+I4AY9d0_JCb661dki5jy7,P_O_14,Amreyya - El-Mawqaf El-Geded,Microbus ,3,1,1
+lQGthxPF7d3FXnmoZFGLV,P_O_14,El-Mawqaf El-Geded - Kilo 21,Microbus ,3,1,1
+E_oc6kDbFdlvVaZssBQex,P_O_14,Bahary (Ras Al-Tin) - Kabo,Microbus ,3,1,1
+XxUPXIlZHVjWT_a7YqhHy,P_O_14,Al-Bitash - El-Mawqaf El-Geded,Microbus ,3,1,1
+NwvVKB38LtB63C0PtEo-i,P_O_14,El-Mawqaf El-Geded - Shatibi,Microbus ,3,1,1
+zwjvZyv-K7qfVyipl6li5,P_O_14,Borg El Arab Al Arbaneyat Prison - El-Mawqaf El-Geded,Microbus ,3,1,1
+dC4CWsX_TbK9g5r1kzt4S,P_O_14,Abu Qir - El-Mandara,Microbus ,3,1,1
+50n7_gqFiIrgeNHtVzwF0,P_O_14,Kilo 21 - Sidi Gabir,Microbus ,3,1,1
+BDGXXpou9Eb38xEVTNUs2,P_O_14,Amreyya - Kilo 21,Microbus ,3,1,1
+_RCpDqcLlmzJHSPPy8bli,P_O_14,Kilo 21 - Raml Station,Microbus ,3,1,1
+Jahu5bHSRsdCyh3p5H6cJ,P_O_14,Bahary (Ras Al-Tin) - El-Mandara,Microbus ,3,1,1
+cQIW-LxFXCIuxPpIw4MR2,P_O_14,Amreyya - El-Awayed,Microbus ,3,1,1
+8NzGmmMDzhEhQEXbQjJTl,P_O_14,Sidi Bishr - Train Station (El-Shohada Square),Microbus ,3,1,1
+3I93k-8Viq6W8QFXbpmUU,P_O_14,El-Rassafa - Train Station (El-Shohada Square),Microbus ,3,1,1
+pIaHBI4j1KA7mIDUenoKC,Bus,Abd El-Qader Al-Gadida - Train Station (El-Shohada Square),Bus 480,3,1,1
+T6BRc19d7TrtHQroCLymy,P_O_14,Hanuvil Gameyya - Raml Station,Microbus ,3,1,1
+LrIznn0Nk3YYvE6SV4NT_,Bus,Asafra - Train Station (El-Shohada Square),Bus 739,3,1,1
+o7ehON1F_k7JHoHJOQYGh,P_B_8,Al-Seyouf (Falaky) - El-Sa'ah (Clock Square),Tomnaya ,3,1,1
+llujnjcOUaGBRa_Jecss3,P_B_8,El-Awayed - El-Sa'ah (Clock Square),Tomnaya ,3,1,1
+VqsKdXjc_nTkIE8PZUK7V,Bus,Asafra - Train Station (El-Shohada Square),Bus 735,3,1,1
+RSdPdtwiGzlvedMSUpA36,Bus,El-Awayed - Sidi Gabir,Bus 243,3,1,1
+T7uwVnYTnWKajNK7K5gyj,P_B_8,Al-Maraghi - El-Sa'ah (Clock Square),Tomnaya ,3,1,1
+9Ge1SSHI5IgHaGIK61A7q,P_B_8,Abo Soliman - El-Sa'ah (Clock Square),Tomnaya ,3,1,1
+XQFjzrlmVSDo00hpPwPD9,P_B_8,Hanuvil - Kilo 21,Tomnaya ,3,1,1
+djf-0ENVceYNg5x6O7HGq,Bus,El-Nasreya El-Qadema - Train Station (El-Shohada Square),Bus 409,3,1,1
+8ExRMTw-r4JAqxk8WGljD,Bus,Al-Seyouf (Falaky) - Anfoshy,Bus 733,3,1,1
+oepuTc06iN5U0ZwjmqZIj,Bus,El-Mawqaf El-Geded - Quta (Soter),Bus 759,3,1,1
+D7IwqxPBMcEQiGv3sjC3s,P_B_8,El-Awayed - Victoria station,Tomnaya ,3,1,1
+-H9LP4vuOqj-RIRCZNg_6,P_B_8,Ezbet Saad - Sidi Gabir,Tomnaya ,3,1,1
+0WNbk9MGSKJVqVAWMBS1q,Bus,Anfoshy - El-Mandara,Bus ,3,1,1
+gboAfb13A28YhAJkt-Pkx,Bus,Kilo 21 - Train Station (El-Shohada Square),Bus 423,3,1,1
+jmLM1TsmnRPlkOtGUD0nu,Bus,Al-Milaha - Anfoshy,Bus 25,3,1,1
+9nFu_lj836CKLSJUzjejg,P_B_8,Al-Wardiyan - El-Mansheya,Tomnaya ,3,1,1
+V_vEOLz-VvDvsJC4jk5JR,Bus,Amreyya - Raml Station,Bus 10,3,1,1
+wh9cIxqRBTvvkxeMtkHAi,Bus,Shahr Al-Asal - Train Station (El-Shohada Square),Bus 455,3,1,1
+1Ctgvye_a8bTjvozOsfEX,P_B_8,Al-Maraghi - El-Awayed,Tomnaya ,3,1,1
+S8t0ygpYGRBLHfPC3bjJm,P_B_8,El-Awayed - Khorshid,Tomnaya ,3,1,1
+nl0Bhq5jfJUhmpghbnEaV,Minibus,Abu Qir - Train Station (El-Shohada Square),Minibus 1,3,1,1
+2sefONCZ5v5w4bCF1ybYX,Minibus,Al-Milaha - Train Station (El-Shohada Square),Minibus 20,3,1,1
+hMo27Nx4A3lFCdh0tNdmf,Minibus,Abu Qir - Bahary (Ras Al-Tin),Minibus 25,3,1,1
+EWmI2x176BtYHecDIWm2H,Minibus,Bahary (Ras Al-Tin) - Street 45,Minibus 5,3,1,1
+7vCDYOyx9Gj6RZuCS5Igi,Minibus,Abu Qir - Bahary (Ras Al-Tin),Minibus 4,3,1,1
