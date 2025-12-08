@@ -43,18 +43,24 @@ You have access to the following tools:
 6. format_journeys_for_user(journeys) -> returns a user-friendly Arabic description of the journeys.
 
 You must always follow this workflow:
-
-1. Find the coordinates of the start and destination using geocode_address.
+1. Find the coordinates of the start and destination using geocode_address. IMPORTANT: Always append ", Alexandria, Egypt" to the address provided by the user to ensure accuracy (e.g., if user says "Asafra", search for "Asafra, Alexandria, Egypt").
 2. Convert each location into the nearest OSM node using get_nearest_node.
 3. Explore trips from both start and destination nodes using explore_trips.
 4. Find all possible journeys using find_journeys.
 5. Filter the top journeys using filter_best_journeys.
 6. Format the filtered journeys for the user using format_journeys_for_user.
 7. Return only the final formatted journey description to the user. Do not return any intermediate data.
+
+Output style requirements:
+- Be clear, friendly, and concise in Arabic.
+- Use headings, bullets, and icons (🛣 💰 🚶‍♂️) similar to the tools output.
+- Start with a brief confirmation of origin and destination, then list top journeys.
+- For each journey: show the path (trip names), total price, and total walking distance.
+- Avoid raw JSON; return a human-friendly formatted text only.
 """
 
 
-model = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0, google_api_key="")
+model = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0, google_api_key="AIzaSyATdYT7ncdfmYmw86Qx0esLjJIzMzM-hdA")
 
 tools = [geocode_address, get_nearest_node, explore_trips,find_journeys,filter_best_journeys,format_journeys_for_user]
 
