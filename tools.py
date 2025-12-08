@@ -29,9 +29,13 @@ def set_graph(g):
 
 # @tool
 def geocode_address(address: str) -> dict:
-    """Geocode an address to latitude and longitude coordinates."""
-    geolocator = Nominatim(user_agent="my_geocoding_app")
-    location = geolocator.geocode(address)
+    """Geocode an address to latitude and longitude coordinates.
+    Always bias search to Alexandria, Egypt for accuracy.
+    """
+    geolocator = Nominatim(user_agent="alex-transport-agent")
+    # Ensure locality context for better accuracy
+    query = f"{address}, Alexandria, Egypt" if "Alexandria" not in address and "الإسكندرية" not in address else address
+    location = geolocator.geocode(query)
 
     if location:
         return {
@@ -100,10 +104,11 @@ def explore_trips(source: int, cutoff=15000) -> dict:
                 best = trips.get(trip_id)
                 if best is None or d < best["walk"]:
                     trips[trip_id] = {
-                        "stop_id": real_stop_id, # SAVE THE GTFS STOP ID
-                        "osm_node_id": node,        # Save OSM ID just in case
-                        "walk": d,
-                        "path": reconstruct_path(node)
+                        "stop_id": real_stop_id,  # GTFS stop id for pricing
+                        "osm_node_id": node,      # OSM node id (kept minimal)
+                        "walk": d,                # walking distance in meters
+                        # Keep payload lean to reduce LLM tokens
+                        "path": []
                     }
 
         # Relax neighbors (Standard Dijkstra)
