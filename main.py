@@ -39,7 +39,7 @@ trips_end = explore_trips(node_id_end)
 
 
 
-jor = find_journeys(trip_graph, pathways_dict, trips_start, trips_end, max_transfers=2)
+jor = find_journeys(trips_start, trips_end, max_transfers=2)
 filtered= filter_best_journeys(jor, max_results=5)
 formatted_journeys = format_journeys_for_user(filtered)
 print(formatted_journeys)

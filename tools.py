@@ -175,7 +175,10 @@ def find_journeys(start_trips, goal_trips, max_transfers=2) -> List[Journey]:
             # final_costs['transport_time'] += leg_time
             final_costs['walk'] += goal_trips[start_trip_id]['walk']
             
-            results.append((path, final_costs))
+            results.append({
+                "path": path,
+                "costs": final_costs
+            })
 
     # --- 2. BFS ---
     while queue:
