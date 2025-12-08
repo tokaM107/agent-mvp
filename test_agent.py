@@ -60,7 +60,7 @@ Output style requirements:
 """
 
 
-model = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0, google_api_key="AIzaSyATdYT7ncdfmYmw86Qx0esLjJIzMzM-hdA")
+model = ChatGoogleGenerativeAI(model="emini-2.5-flash", temperature=0, google_api_key="")
 
 tools = [geocode_address, get_nearest_node, explore_trips,find_journeys,filter_best_journeys,format_journeys_for_user]
 

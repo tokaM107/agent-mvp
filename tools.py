@@ -104,10 +104,11 @@ def explore_trips(source: int, cutoff=15000) -> dict:
                 best = trips.get(trip_id)
                 if best is None or d < best["walk"]:
                     trips[trip_id] = {
-                        "stop_id": real_stop_id, # SAVE THE GTFS STOP ID
-                        "osm_node_id": node,        # Save OSM ID just in case
-                        "walk": d,
-                        "path": reconstruct_path(node)
+                        "stop_id": real_stop_id,  # GTFS stop id for pricing
+                        "osm_node_id": node,      # OSM node id (kept minimal)
+                        "walk": d,                # walking distance in meters
+                        # Keep payload lean to reduce LLM tokens
+                        "path": []
                     }
 
         # Relax neighbors (Standard Dijkstra)
