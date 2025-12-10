@@ -1,5 +1,5 @@
 from langchain.tools import tool
-from langchain_google_genai import ChatGoogleGenerativeAI
+import google.generativeai as genai
 from geopy.geocoders import Nominatim
 import time
 import pandas as pd
@@ -7,25 +7,42 @@ import osmnx as ox
 from models.trip_price_class import TripPricePredictor
 import heapq
 from tools import *
-from langchain.agents import create_agent
+from dotenv import load_dotenv
+import os
+import pickle
 
-g = ox.graph_from_xml("labeled.osm", bidirectional=True, simplify=True)
-g = attach_trips_to_graph(g)
+# Load environment variables
+load_dotenv()
+
+# Cache the graph to avoid reprocessing each run
+CACHE_GRAPH_PATH = "graph_cache.pkl"
+if os.path.exists(CACHE_GRAPH_PATH):
+    with open(CACHE_GRAPH_PATH, "rb") as f:
+        g = pickle.load(f)
+else:
+    g = ox.graph_from_xml("labeled.osm", bidirectional=True, simplify=True)
+    g = attach_trips_to_graph(g)
+    with open(CACHE_GRAPH_PATH, "wb") as f:
+        pickle.dump(g, f)
 set_graph(g)
 
 print("✅ Graph initialized")
 print(g.nodes[list(g.nodes)[0]].keys())
 
 
-pathways = pd.read_csv('trip_pathways.csv')
-
-
-trip_graph = defaultdict(dict)
-pathways_dict = pathways.to_dict('index')
-
-for idx, row in pathways.iterrows():
-    trip_graph[row['start_trip_id']][row['end_trip_id']] = idx 
-    
+# Cache pathways graph mapping
+CACHE_PATHWAYS_PATH = "pathways_cache.pkl"
+if os.path.exists(CACHE_PATHWAYS_PATH):
+    with open(CACHE_PATHWAYS_PATH, "rb") as f:
+        trip_graph, pathways_dict = pickle.load(f)
+else:
+    pathways = pd.read_csv('trip_pathways.csv')
+    trip_graph = defaultdict(dict)
+    pathways_dict = pathways.to_dict('index')
+    for idx, row in pathways.iterrows():
+        trip_graph[row['start_trip_id']][row['end_trip_id']] = idx 
+    with open(CACHE_PATHWAYS_PATH, "wb") as f:
+        pickle.dump((trip_graph, pathways_dict), f)
 set_trip_graph(trip_graph, pathways_dict)
 
 
@@ -60,17 +77,38 @@ Output style requirements:
 """
 
 
-model = ChatGoogleGenerativeAI(model="emini-2.5-flash", temperature=0, google_api_key="")
+def run_once(query: str) -> str:
+    # Direct tool calls to minimize LLM turns
+    src_geo = geocode_address("الموقف الجديد")
+    dst_geo = geocode_address("العصافرة")
+    if "error" in src_geo or "error" in dst_geo:
+        return "لم أستطع تحديد العناوين بدقة. جرّب صيغة أخرى." 
+    src_node = get_nearest_node(src_geo["lat"], src_geo["lon"]) 
+    dst_node = get_nearest_node(dst_geo["lat"], dst_geo["lon"]) 
+    start_trips = explore_trips(src_node)
+    goal_trips = explore_trips(dst_node)
+    journeys = find_journeys(start_trips, goal_trips)
+    best = filter_best_journeys(journeys, max_results=5)
+    formatted = format_journeys_for_user(best)
 
-tools = [geocode_address, get_nearest_node, explore_trips,find_journeys,filter_best_journeys,format_journeys_for_user]
+    # Single LLM call via Google SDK (no auto-retries)
+    api_key = os.environ.get("GOOGLE_API_KEY", "")
+    genai.configure(api_key=api_key)
+    prompt = (
+        "رجاءً أكّد المسار التالي بشكل مختصر وواضح، واحتفظ بجميع الأسعار والمسافات كما هي:\n\n" 
+        + formatted
+    )
+    model_name = "gemini-2.5-flash"
+    # Use generate_content once; avoid SDK retry wrappers
+    response = genai.GenerativeModel(model_name).generate_content(prompt, request_options={"retry": None, "timeout": 60})
+    return getattr(response, "text", str(response))
 
-agent = create_agent(model, tools=tools)
-
-# agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
-
-res= agent.invoke({"messages": [("system", system_prompt),("user", "أريد الذهاب من الموقف الجديد الي العصافرة")]})
-
-print(res)
+if __name__ == "__main__":
+    user_query = "أريد الذهاب من الموقف الجديد الي العصافرة"
+    print("🚀 السؤال:", user_query)
+    out = run_once(user_query)
+    print("\n🏁 النتيجة النهائية:")
+    print(out)
 # agent.run("أريد الذهاب من العجمي إلى محطة الرمل")
 
 # response = model.invoke("هو ازاي اروح من محطة مصر للعجمي ؟ في مشاريع بتروح هناك؟")
