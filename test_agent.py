@@ -78,9 +78,31 @@ Output style requirements:
 
 
 def run_once(query: str) -> str:
-    # Direct tool calls to minimize LLM turns
-    src_geo = geocode_address("الموقف الجديد")
-    dst_geo = geocode_address("العصافرة")
+    # 1) LLM parses the user query to origin/destination once (small prompt)
+    api_key = os.environ.get("GOOGLE_API_KEY", "")
+    genai.configure(api_key=api_key)
+    parse_prompt = (
+        "استخرج مكان الانطلاق والوصول من الجملة التالية بدقة، بصيغة عربية بسيطة فقط كالتالي:\n"
+        "الانطلاق: ...\nالوصول: ...\n\nالجملة:\n" + query
+    )
+    try:
+        parse_resp = genai.GenerativeModel("gemini-pro").generate_content(parse_prompt, request_options={"retry": None, "timeout": 30})
+        parse_text = getattr(parse_resp, "text", "")
+    except Exception:
+        parse_text = "الانطلاق: الموقف الجديد\nالوصول: العصافرة"
+
+    # naive extract
+    origin = "الموقف الجديد"
+    dest = "العصافرة"
+    for line in parse_text.splitlines():
+        if line.strip().startswith("الانطلاق:"):
+            origin = line.split(":", 1)[-1].strip() or origin
+        if line.strip().startswith("الوصول:"):
+            dest = line.split(":", 1)[-1].strip() or dest
+
+    # 2) Tools pipeline (deterministic)
+    src_geo = geocode_address(origin)
+    dst_geo = geocode_address(dest)
     if "error" in src_geo or "error" in dst_geo:
         return "لم أستطع تحديد العناوين بدقة. جرّب صيغة أخرى." 
     src_node = get_nearest_node(src_geo["lat"], src_geo["lon"]) 
@@ -91,20 +113,23 @@ def run_once(query: str) -> str:
     best = filter_best_journeys(journeys, max_results=5)
     formatted = format_journeys_for_user(best)
 
-    # Single LLM call via Google SDK (no auto-retries)
-    api_key = os.environ.get("GOOGLE_API_KEY", "")
-    genai.configure(api_key=api_key)
-    prompt = (
-        "رجاءً أكّد المسار التالي بشكل مختصر وواضح، واحتفظ بجميع الأسعار والمسافات كما هي:\n\n" 
-        + formatted
+    # 3) Single LLM call for final Arabic answer, prefer 2.5-flash then fallback to pro
+    polish_prompt = (
+        "أكد للمستخدم المسار المقترح التالي بشكل طبيعي ومفهوم، واستخدم لهجته المصرية إن أمكن،"
+        " مع الحفاظ على الأسعار والمسافات والأسماء كما هي تمامًا.\n\n" + formatted
     )
-    model_name = "gemini-2.5-flash"
-    # Use generate_content once; avoid SDK retry wrappers
-    response = genai.GenerativeModel(model_name).generate_content(prompt, request_options={"retry": None, "timeout": 60})
-    return getattr(response, "text", str(response))
+    try:
+        resp = genai.GenerativeModel("gemini-2.5-flash").generate_content(polish_prompt, request_options={"retry": None, "timeout": 60})
+        return getattr(resp, "text", str(resp))
+    except Exception:
+        try:
+            resp = genai.GenerativeModel("gemini-pro").generate_content(polish_prompt, request_options={"retry": None, "timeout": 60})
+            return getattr(resp, "text", str(resp))
+        except Exception:
+            return formatted
 
 if __name__ == "__main__":
-    user_query = "أريد الذهاب من الموقف الجديد الي العصافرة"
+    user_query = "أريد الذهاب من محطة مصر  الي ابو يوسف"
     print("🚀 السؤال:", user_query)
     out = run_once(user_query)
     print("\n🏁 النتيجة النهائية:")
