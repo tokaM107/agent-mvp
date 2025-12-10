@@ -127,6 +127,11 @@ def run_once(query: str) -> str:
         return "لم أستطع تحديد العناوين بدقة. جرّب صيغة أخرى." 
     src_node = get_nearest_node(src_geo["lat"], src_geo["lon"]) 
     dst_node = get_nearest_node(dst_geo["lat"], dst_geo["lon"]) 
+
+    # Optional debug: show resolved coordinates and node ids
+    if os.environ.get("DEBUG_ROUTING", "").strip():
+        print(f"[DEBUG] origin='{origin}' -> lat={src_geo['lat']}, lon={src_geo['lon']}, node={src_node}")
+        print(f"[DEBUG] dest='{dest}' -> lat={dst_geo['lat']}, lon={dst_geo['lon']}, node={dst_node}")
     start_trips = explore_trips(src_node)
     goal_trips = explore_trips(dst_node)
     journeys = find_journeys(start_trips, goal_trips)
@@ -150,7 +155,7 @@ def run_once(query: str) -> str:
             return formatted
 
 if __name__ == "__main__":
-    user_query = "أريد الذهاب من محطة مصر  الي ابو يوسف"
+    user_query = "أريد الذهاب من الموقف الجديد الي العصافرة"
     print(" السؤال:", user_query)
     out = run_once(user_query)
     print(" النتيجة النهائية:")

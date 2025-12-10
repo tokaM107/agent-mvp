@@ -1,5 +1,6 @@
 from langchain.tools import tool
 from geopy.geocoders import Nominatim
+from geopy.extra.rate_limiter import RateLimiter
 import time
 import osmnx as ox
 from models.trip_price_class import TripPricePredictor
@@ -27,25 +28,23 @@ def set_graph(g):
     GLOBAL_G = g
 
 
-# @tool
-def geocode_address(address: str) -> dict:
-    """Geocode an address to latitude and longitude coordinates.
-    Always bias search to Alexandria, Egypt for accuracy.
-    """
-    geolocator = Nominatim(user_agent="alex-transport-agent")
-    # Ensure locality context for better accuracy
-    query = f"{address}, Alexandria, Egypt" if "Alexandria" not in address and "الإسكندرية" not in address else address
-    location = geolocator.geocode(query)
+# Removed GTFS-derived aliasing: geocoding uses Nominatim only
 
+
+def geocode_address(address: str) -> dict:
+    """Geocode an address to latitude/longitude using Nominatim only,
+    with Alexandria, Egypt locality bias for improved matching."""
+    geolocator = Nominatim(user_agent="alex-transport-agent")
+    geocode = RateLimiter(geolocator.geocode, min_delay_seconds=0.8)
+    # Ensure locality context for better accuracy
+    query = address.strip()
+    if ("Alexandria" not in query) and ("الإسكندرية" not in query) and ("Alexandria, Egypt" not in query):
+        query = f"{query}, Alexandria, Egypt"
+    location = geocode(query)
     if location:
-        return {
-            "lat": float(location.latitude),
-            "lon": float(location.longitude)
-        }
+        return {"lat": float(location.latitude), "lon": float(location.longitude)}
     else:
-        return {
-            "error": "Location not found"
-        }
+        return {"error": "Location not found"}
     
 # @tool 
 def get_nearest_node(lat: float, lon: float) -> int:
@@ -277,16 +276,57 @@ def format_journeys_for_user(journeys: List[Journey]) -> str:
     """
     output = ""
 
+    if not journeys:
+        return "للأسف، مفيش مسارات مناسبة من مكان الانطلاق للمكان المطلوب حسب البيانات الحالية."
+
+    # Compute metrics for tagging
+    monies = [j["costs"]["money"] for j in journeys]
+    walks = [j["costs"]["walk"] for j in journeys]
+    transfers = [max(0, len(j["path"]) - 1) for j in journeys]
+
+    min_money = min(monies)
+    max_money = max(monies)
+    min_walk = min(walks)
+    min_transfers = min(transfers)
+
+    # Best overall by (money, transfers, walk)
+    best_idx = 0
+    best_tuple = (monies[0], transfers[0], walks[0])
+    for idx in range(1, len(journeys)):
+        t = (monies[idx], transfers[idx], walks[idx])
+        if t < best_tuple:
+            best_tuple = t
+            best_idx = idx
+
     for i, journey in enumerate(journeys, 1):
         path = journey["path"]
         costs = journey["costs"]
+        trans = max(0, len(path) - 1)
 
         readable_path = [decode_trip(t) for t in path]
         path_text = " → ".join(readable_path)
 
+        # Tag lines based on metrics
+        tags = []
+        if i - 1 == best_idx:
+            tags.append("دي أسهل وأوفر رحلة ليك:")
+        if trans == 0:
+            tags.append("دي هتبقا مواصلة واحدة")
+        elif trans > 1:
+            tags.append("الرحلة دي محتاجة تغيير أكتر من ميكروباص:")
+        if int(costs["walk"]) <= 10:
+            tags.append("دي رحلة مفهاش مشي")
+        if costs["money"] == max_money:
+            tags.append("دي اغلي رحلة")
+        if int(costs["walk"]) == int(min_walk):
+            tags.append("دي أقل مشي")
+
+        tag_text = "\n".join([f"🔸 {t}" for t in tags])
+        tag_block = (tag_text + "\n") if tag_text else ""
+
         output += f"""
 🔹 الرحلة {i}:
-🛣 المسار: {path_text}
+{tag_block}🛣 المسار: {path_text}
 💰 السعر: {costs['money']} جنيه
 🚶‍♂️ المشي: {int(costs['walk'])} متر
 \n
