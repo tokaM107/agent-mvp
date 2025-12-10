@@ -10,6 +10,8 @@ from tools import *
 from dotenv import load_dotenv
 import os
 import pickle
+import re
+import json
 
 # Load environment variables
 load_dotenv()
@@ -77,28 +79,46 @@ Output style requirements:
 """
 
 
+def _regex_extract(query: str) -> tuple[str, str] | tuple[None, None]:
+    text = re.sub(r"\s+", " ", query.strip())
+    # Handle Arabic variants of "to": إلى/الى/لـ/ل/لي
+    m = re.search(r"من\s+(.+?)\s+(?:إلى|الى|الي|إلي|لـ|ل|لي)\s+(.+)$", text)
+    if m:
+        return m.group(1).strip(), m.group(2).strip()
+    return None, None
+
+
 def run_once(query: str) -> str:
-    # 1) LLM parses the user query to origin/destination once (small prompt)
+    # 1) LLM parses the user query to origin/destination once (JSON-only)
     api_key = os.environ.get("GOOGLE_API_KEY", "")
     genai.configure(api_key=api_key)
     parse_prompt = (
-        "استخرج مكان الانطلاق والوصول من الجملة التالية بدقة، بصيغة عربية بسيطة فقط كالتالي:\n"
-        "الانطلاق: ...\nالوصول: ...\n\nالجملة:\n" + query
+        "أنت محلل نوايا. أخرج مكان الانطلاق والوصول من النص التالي وأعد JSON فقط بدون أي كلام إضافي،"
+        " بالمفتاحين origin و destination، مثال: {\"origin\":\"...\",\"destination\":\"...\"}.\n\n"
+        f"النص: {query}"
     )
+    origin = None
+    dest = None
     try:
-        parse_resp = genai.GenerativeModel("gemini-pro").generate_content(parse_prompt, request_options={"retry": None, "timeout": 30})
-        parse_text = getattr(parse_resp, "text", "")
+        parse_resp = genai.GenerativeModel("gemini-pro").generate_content(parse_prompt, request_options={"retry": None, "timeout": 20})
+        raw = getattr(parse_resp, "text", "") or ""
+        # Extract first JSON object from text
+        jmatch = re.search(r"\{[\s\S]*\}", raw)
+        if jmatch:
+            data = json.loads(jmatch.group(0))
+            origin = (data.get("origin") or data.get("الانطلاق") or "").strip() or None
+            dest = (data.get("destination") or data.get("الوصول") or "").strip() or None
     except Exception:
-        parse_text = "الانطلاق: الموقف الجديد\nالوصول: العصافرة"
+        pass
 
-    # naive extract
-    origin = "الموقف الجديد"
-    dest = "العصافرة"
-    for line in parse_text.splitlines():
-        if line.strip().startswith("الانطلاق:"):
-            origin = line.split(":", 1)[-1].strip() or origin
-        if line.strip().startswith("الوصول:"):
-            dest = line.split(":", 1)[-1].strip() or dest
+    # Fallback: regex extraction if LLM parse failed
+    if not origin or not dest:
+        r_origin, r_dest = _regex_extract(query)
+        origin = origin or r_origin
+        dest = dest or r_dest
+
+    if not origin or not dest:
+        return "من فضلك حدّد مكان الانطلاق والوصول بوضوح، مثل: من محطة مصر إلى أبو يوسف."
 
     # 2) Tools pipeline (deterministic)
     src_geo = geocode_address(origin)
@@ -115,6 +135,7 @@ def run_once(query: str) -> str:
 
     # 3) Single LLM call for final Arabic answer, prefer 2.5-flash then fallback to pro
     polish_prompt = (
+        f"المستخدم يريد الذهاب من {origin} إلى {dest}.\n\n" 
         "أكد للمستخدم المسار المقترح التالي بشكل طبيعي ومفهوم، واستخدم لهجته المصرية إن أمكن،"
         " مع الحفاظ على الأسعار والمسافات والأسماء كما هي تمامًا.\n\n" + formatted
     )
@@ -130,9 +151,9 @@ def run_once(query: str) -> str:
 
 if __name__ == "__main__":
     user_query = "أريد الذهاب من محطة مصر  الي ابو يوسف"
-    print("🚀 السؤال:", user_query)
+    print(" السؤال:", user_query)
     out = run_once(user_query)
-    print("\n🏁 النتيجة النهائية:")
+    print(" النتيجة النهائية:")
     print(out)
 # agent.run("أريد الذهاب من العجمي إلى محطة الرمل")
 
