@@ -1,4 +1,5 @@
 from graph_builder import attach_trips_to_graph
+from dotenv import load_dotenv
 import osmnx as ox
 from models.trip_price_class import TripPricePredictor  
 
@@ -9,6 +10,9 @@ from models.trip_price_class import load_model
 import pandas as pd
 from collections import defaultdict
 
+
+# Load environment variables from .env (for GOOGLE_API_KEY, etc.)
+load_dotenv()
 
 g = ox.graph_from_xml("labeled.osm", bidirectional=True, simplify=True)
 g = attach_trips_to_graph(g)
