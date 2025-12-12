@@ -8,6 +8,7 @@ from models.trip_price_class import TripPricePredictor
 import heapq
 from tools import *
 from dotenv import load_dotenv
+from pathlib import Path
 import os
 import pickle
 import re
@@ -80,11 +81,7 @@ Output style requirements:
 
 
 def _regex_extract(query: str) -> tuple[str, str] | tuple[None, None]:
-    text = re.sub(r"\s+", " ", query.strip())
-    # Handle Arabic variants of "to": إلى/الى/لـ/ل/لي
-    m = re.search(r"من\s+(.+?)\s+(?:إلى|الى|الي|إلي|لـ|ل|لي)\s+(.+)$", text)
-    if m:
-        return m.group(1).strip(), m.group(2).strip()
+    # Disabled: fallback extraction via regex is no longer used.
     return None, None
 
 
@@ -94,14 +91,19 @@ def run_once(query: str) -> str:
     genai.configure(api_key=api_key)
     parse_prompt = (
         "أنت محلل نوايا. أخرج مكان الانطلاق والوصول من النص التالي وأعد JSON فقط بدون أي كلام إضافي،"
-        " بالمفتاحين origin و destination، مثال: {\"origin\":\"...\",\"destination\":\"...\"}.\n\n"
+        " استعمل المفتاحين بالإنجليزية تمامًا: origin و destination. أعِدّ JSON مضغوط سطر واحد بدون أسطر جديدة ولا تعليقات"
+        " وبدون أقواس أو تنسيق إضافي مثل ``` أو ```json. مثال دقيق: {\"origin\":\"الموقف الجديد\",\"destination\":\"العصافرة\"}.\n\n"
         f"النص: {query}"
     )
     origin = None
     dest = None
     try:
-        parse_resp = genai.GenerativeModel("gemini-pro").generate_content(parse_prompt, request_options={"retry": None, "timeout": 20})
+        # Use a modern fast model for parsing
+        parse_resp = genai.GenerativeModel("gemini-2.5-flash").generate_content(parse_prompt, request_options={"retry": None, "timeout": 20})
         raw = getattr(parse_resp, "text", "") or ""
+        # Strip common code fences/backticks and language tags
+        raw = re.sub(r"^```[a-zA-Z]*\n|\n```$", "", raw.strip())
+        raw = raw.strip()
         # Extract first JSON object from text
         jmatch = re.search(r"\{[\s\S]*\}", raw)
         if jmatch:
@@ -111,14 +113,9 @@ def run_once(query: str) -> str:
     except Exception:
         pass
 
-    # Fallback: regex extraction if LLM parse failed
+    # Require valid LLM parse; no regex fallback
     if not origin or not dest:
-        r_origin, r_dest = _regex_extract(query)
-        origin = origin or r_origin
-        dest = dest or r_dest
-
-    if not origin or not dest:
-        return "من فضلك حدّد مكان الانطلاق والوصول بوضوح، مثل: من محطة مصر إلى أبو يوسف."
+        return "تعذّر استخراج أماكن الانطلاق والوصول عبر Gemini. تأكّد من كتابة الصيغة بوضوح (مثال: من [المكان A] إلى [المكان B]) وبوجود مفتاح API صالح."
 
     # 2) Tools pipeline (deterministic)
     src_geo = geocode_address(origin)
@@ -136,6 +133,31 @@ def run_once(query: str) -> str:
     goal_trips = explore_trips(dst_node)
     journeys = find_journeys(start_trips, goal_trips)
     best = filter_best_journeys(journeys, max_results=5)
+
+    # Persist journeys to JSON for later querying
+    try:
+        out_dir = Path("output"); out_dir.mkdir(parents=True, exist_ok=True)
+        payload = {
+            "origin": origin,
+            "destination": dest,
+            "origin_geo": src_geo,
+            "destination_geo": dst_geo,
+            "start_node": src_node,
+            "dest_node": dst_node,
+            "journeys": [
+                {
+                    "path": j["path"],
+                    "decoded_path": [decode_trip(t) for t in j["path"]],
+                    "costs": j["costs"],
+                    "transfers": max(0, len(j["path"]) - 1)
+                } for j in best
+            ]
+        }
+        with open(out_dir / "journeys.json", "w", encoding="utf-8") as f:
+            json.dump(payload, f, ensure_ascii=False, indent=2)
+    except Exception:
+        pass
+
     formatted = format_journeys_for_user(best)
 
     # 3) Single LLM call for final Arabic answer, prefer 2.5-flash then fallback to pro
@@ -149,10 +171,22 @@ def run_once(query: str) -> str:
         return getattr(resp, "text", str(resp))
     except Exception:
         try:
-            resp = genai.GenerativeModel("gemini-pro").generate_content(polish_prompt, request_options={"retry": None, "timeout": 60})
+            resp = genai.GenerativeModel("gemini-2.5-flash").generate_content(polish_prompt, request_options={"retry": None, "timeout": 60})
             return getattr(resp, "text", str(resp))
         except Exception:
             return formatted
+
+
+def query_saved_journeys() -> dict | None:
+    """Load last saved journeys from output/journeys.json."""
+    p = Path("output/journeys.json")
+    if not p.exists():
+        return None
+    try:
+        with open(p, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return None
 
 if __name__ == "__main__":
     user_query = "أريد الذهاب من الموقف الجديد الي العصافرة"
@@ -160,6 +194,9 @@ if __name__ == "__main__":
     out = run_once(user_query)
     print(" النتيجة النهائية:")
     print(out)
+    saved = query_saved_journeys()
+    if saved:
+        print("\n[Saved] output/journeys.json written with current results.")
 # agent.run("أريد الذهاب من العجمي إلى محطة الرمل")
 
 # response = model.invoke("هو ازاي اروح من محطة مصر للعجمي ؟ في مشاريع بتروح هناك؟")
