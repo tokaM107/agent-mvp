@@ -118,21 +118,42 @@ def run_once(query: str) -> str:
         return "تعذّر استخراج أماكن الانطلاق والوصول عبر Gemini. تأكّد من كتابة الصيغة بوضوح (مثال: من [المكان A] إلى [المكان B]) وبوجود مفتاح API صالح."
 
     # 2) Tools pipeline (deterministic)
-    src_geo = geocode_address(origin)
-    dst_geo = geocode_address(dest)
+    # Prefer DB stop name search first; else use geocoder
+    db_first = os.environ.get("USE_DB", "").strip()
+    found_src = search_stop_by_name_db(origin) if db_first else []
+    found_dst = search_stop_by_name_db(dest) if db_first else []
+    if found_src:
+        src_geo = {"lat": found_src[0]["lat"], "lon": found_src[0]["lon"], "db_stop_id": found_src[0]["stop_id"]}
+    else:
+        src_geo = geocode_address(origin)
+    if found_dst:
+        dst_geo = {"lat": found_dst[0]["lat"], "lon": found_dst[0]["lon"], "db_stop_id": found_dst[0]["stop_id"]}
+    else:
+        dst_geo = geocode_address(dest)
     if "error" in src_geo or "error" in dst_geo:
         return "لم أستطع تحديد العناوين بدقة. جرّب صيغة أخرى." 
+    # Try DB nearest stop to verify correctness; fallback to OSM node
+    db_near_src = get_nearest_stop_db(src_geo["lat"], src_geo["lon"]) if db_first else None
+    db_near_dst = get_nearest_stop_db(dst_geo["lat"], dst_geo["lon"]) if db_first else None
     src_node = get_nearest_node(src_geo["lat"], src_geo["lon"]) 
     dst_node = get_nearest_node(dst_geo["lat"], dst_geo["lon"]) 
 
     # Optional debug: show resolved coordinates and node ids
     if os.environ.get("DEBUG_ROUTING", "").strip():
-        print(f"[DEBUG] origin='{origin}' -> lat={src_geo['lat']}, lon={src_geo['lon']}, node={src_node}")
-        print(f"[DEBUG] dest='{dest}' -> lat={dst_geo['lat']}, lon={dst_geo['lon']}, node={dst_node}")
-    start_trips = explore_trips(src_node)
-    goal_trips = explore_trips(dst_node)
-    journeys = find_journeys(start_trips, goal_trips)
-    best = filter_best_journeys(journeys, max_results=5)
+        print(f"[DEBUG] origin='{origin}' -> lat={src_geo['lat']}, lon={src_geo['lon']}, node={src_node}, db_nearest={db_near_src}")
+        print(f"[DEBUG] dest='{dest}' -> lat={dst_geo['lat']}, lon={dst_geo['lon']}, node={dst_node}, db_nearest={db_near_dst}")
+    # Prefer DB journeys if DB is enabled and nearest DB stops are available
+    best = []
+    if db_first and db_near_src and db_near_dst:
+        db_journeys = find_journeys_db(db_near_src["stop_id"], db_near_dst["stop_id"], max_results=5)
+        if db_journeys:
+            best = filter_best_journeys(db_journeys, max_results=5)
+
+    if not best:
+        start_trips = explore_trips(src_node)
+        goal_trips = explore_trips(dst_node)
+        journeys = find_journeys(start_trips, goal_trips)
+        best = filter_best_journeys(journeys, max_results=5)
 
     # Persist journeys to JSON for later querying
     try:
