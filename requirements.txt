@@ -1,0 +1,13 @@
+osmnx
+geopy
+python-dotenv
+google-generativeai
+langchain
+pandas
+numpy
+geopandas
+shapely
+networkx
+joblib
+scikit-learn
+psycopg2-binary

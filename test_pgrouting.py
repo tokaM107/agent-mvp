@@ -77,17 +77,17 @@ def test_database_connection():
     
     conn = get_db_connection()
     if conn:
-        print("✅ Database connection successful")
+        print(" Database connection successful")
         try:
             cur = conn.cursor()
             cur.execute("SELECT COUNT(*) FROM stop;")
             stop_count = cur.fetchone()[0]
-            print(f"✅ Found {stop_count} stops in database")
+            print(f" Found {stop_count} stops in database")
             conn.close()
         except Exception as e:
-            print(f"❌ Error querying database: {e}")
+            print(f" Error querying database: {e}")
     else:
-        print("❌ Database connection failed")
+        print(" Database connection failed")
     print()
 
 
@@ -99,7 +99,7 @@ def test_pgrouting_tables():
     
     conn = get_db_connection()
     if not conn:
-        print("❌ No database connection")
+        print(" No database connection")
         return
     
     try:
@@ -108,16 +108,16 @@ def test_pgrouting_tables():
         # Check ways table
         cur.execute("SELECT COUNT(*) FROM ways;")
         ways_count = cur.fetchone()[0]
-        print(f"✅ Ways table: {ways_count:,} street segments")
+        print(f" Ways table: {ways_count:,} street segments")
         
         # Check vertices table
         cur.execute("SELECT COUNT(*) FROM ways_vertices_pgr;")
         vertices_count = cur.fetchone()[0]
-        print(f"✅ Vertices table: {vertices_count:,} vertices")
+        print(f" Vertices table: {vertices_count:,} vertices")
         
         conn.close()
     except Exception as e:
-        print(f"❌ Error checking pgRouting tables: {e}")
+        print(f" Error checking pgRouting tables: {e}")
     print()
 
 
@@ -133,9 +133,9 @@ def test_snap_stop_to_vertex():
     for stop_id in test_stop_ids:
         vertex_id = snap_stop_to_vertex_db(stop_id)
         if vertex_id:
-            print(f"✅ Stop {stop_id} → Vertex {vertex_id}")
+            print(f" Stop {stop_id} → Vertex {vertex_id}")
         else:
-            print(f"❌ Stop {stop_id} → No vertex found")
+            print(f" Stop {stop_id} → No vertex found")
     print()
 
 
@@ -148,7 +148,7 @@ def test_walking_distance():
     # Get stop names first
     conn = get_db_connection()
     if not conn:
-        print("❌ No database connection")
+        print(" No database connection")
         return
     
     try:
@@ -158,7 +158,7 @@ def test_walking_distance():
         conn.close()
         
         if len(stops) < 2:
-            print("❌ Not enough stops to test")
+            print(" Not enough stops to test")
             return
         
         # Test walking distance between first two stops
@@ -174,17 +174,17 @@ def test_walking_distance():
         
         if walk_meters:
             walk_km = walk_meters / 1000
-            print(f"✅ Walking distance: {walk_meters:.0f} meters ({walk_km:.2f} km)")
+            print(f" Walking distance: {walk_meters:.0f} meters ({walk_km:.2f} km)")
             
             # Estimate walking time (avg 5 km/h = 83.33 m/min)
             walk_minutes = walk_meters / 83.33
-            print(f"   Estimated walking time: {walk_minutes:.1f} minutes")
+            print(f"Estimated walking time: {walk_minutes:.1f} minutes")
         else:
-            print("❌ No walking path found")
-            print("   (Possible reasons: stops too far apart, disconnected street network)")
+            print(" No walking path found")
+            print(" (Possible reasons: stops too far apart, disconnected street network)")
     
     except Exception as e:
-        print(f"❌ Error testing walking distance: {e}")
+        print(f" Error testing walking distance: {e}")
     print()
 
 
@@ -196,7 +196,7 @@ def test_nearby_stops_walk():
     
     conn = get_db_connection()
     if not conn:
-        print("❌ No database connection")
+        print(" No database connection")
         return
     
     try:
@@ -227,7 +227,7 @@ def test_nearby_stops_walk():
         conn.close()
         
         if not result:
-            print("❌ No nearby stops found within 1km")
+            print(" No nearby stops found within 1km")
             return
         
         stop1_id, stop1_name, stop2_id, stop2_name, straight_line = result
@@ -243,16 +243,16 @@ def test_nearby_stops_walk():
         if walk_meters:
             walk_km = walk_meters / 1000
             detour_ratio = walk_meters / straight_line
-            print(f"✅ Walking distance: {walk_meters:.0f} meters ({walk_km:.2f} km)")
+            print(f" Walking distance: {walk_meters:.0f} meters ({walk_km:.2f} km)")
             print(f"   Detour factor: {detour_ratio:.2f}x (1.0 = straight line)")
             
             walk_minutes = walk_meters / 83.33
             print(f"   Estimated walking time: {walk_minutes:.1f} minutes")
         else:
-            print("❌ No walking path found")
+            print(" No walking path found")
     
     except Exception as e:
-        print(f"❌ Error testing nearby stops: {e}")
+        print(f" Error testing nearby stops: {e}")
     print()
 
 

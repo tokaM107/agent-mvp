@@ -29,7 +29,7 @@ else:
         pickle.dump(g, f)
 set_graph(g)
 
-print("✅ Graph initialized")
+print(" Graph initialized")
 print(g.nodes[list(g.nodes)[0]].keys())
 
 
@@ -168,7 +168,7 @@ def run_once(query: str) -> str:
             "journeys": [
                 {
                     "path": j["path"],
-                    "decoded_path": [decode_trip(t) for t in j["path"]],
+                    "decoded_path": [decode_trip(t) if isinstance(t, (int, float)) or str(t).isdigit() else str(t) for t in j["path"]],
                     "costs": j["costs"],
                     "transfers": max(0, len(j["path"]) - 1)
                 } for j in best

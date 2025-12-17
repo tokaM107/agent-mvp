@@ -19,9 +19,9 @@
         "FUo5FExiKwUTpyTUJYA7R-07:00:00"
       ],
       "decoded_path": [
-        "Microbus  (Asafra - El-Mansheya)",
-        "Microbus  (El-Mansheya - El-Sa'ah (Clock Square))",
-        "Microbus  (Asafra - Train Station (El-Shohada Square))"
+        "OI7bd_u7laDmk8SxgppK0-07:00:00",
+        "RbB2w0p-_BgwRa6AbSa-b-07:00:00",
+        "FUo5FExiKwUTpyTUJYA7R-07:00:00"
       ],
       "costs": {
         "money": 12.25,
@@ -36,9 +36,9 @@
         "oL-cc2-4cc5VXM7r-ShUc-07:00:00"
       ],
       "decoded_path": [
-        "Microbus  (Asafra - El-Mansheya)",
-        "Microbus  (El-Mansheya - El-Sa'ah (Clock Square))",
-        "Microbus  (Street 45 - Train Station (El-Shohada Square))"
+        "OI7bd_u7laDmk8SxgppK0-07:00:00",
+        "RbB2w0p-_BgwRa6AbSa-b-07:00:00",
+        "oL-cc2-4cc5VXM7r-ShUc-07:00:00"
       ],
       "costs": {
         "money": 12.25,
@@ -53,9 +53,9 @@
         "H4Zrbg3RLebdgA2rD0SL4-07:00:00"
       ],
       "decoded_path": [
-        "Microbus  (Asafra - El-Mansheya)",
-        "Microbus  (El-Mansheya - El-Sa'ah (Clock Square))",
-        "Microbus  (Sidi Bishr - Train Station (El-Shohada Square))"
+        "OI7bd_u7laDmk8SxgppK0-07:00:00",
+        "RbB2w0p-_BgwRa6AbSa-b-07:00:00",
+        "H4Zrbg3RLebdgA2rD0SL4-07:00:00"
       ],
       "costs": {
         "money": 12.25,
@@ -68,7 +68,7 @@
         "FUo5FExiKwUTpyTUJYA7R-07:00:00"
       ],
       "decoded_path": [
-        "Microbus  (Asafra - Train Station (El-Shohada Square))"
+        "FUo5FExiKwUTpyTUJYA7R-07:00:00"
       ],
       "costs": {
         "money": 4.0,
@@ -82,8 +82,8 @@
         "tL1NRyqKwJOCmUECmIQqO-07:00:00"
       ],
       "decoded_path": [
-        "Microbus  (Asafra - Train Station (El-Shohada Square))",
-        "Microbus  (El-Sa'ah (Clock Square) - Sidi Gabir)"
+        "FUo5FExiKwUTpyTUJYA7R-07:00:00",
+        "tL1NRyqKwJOCmUECmIQqO-07:00:00"
       ],
       "costs": {
         "money": 7.0,

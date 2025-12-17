@@ -4,13 +4,15 @@ from geopy.extra.rate_limiter import RateLimiter
 import os
 import psycopg2
 import time
-import osmnx as ox
+try:
+    import osmnx as ox
+except Exception:
+    ox = None
 from models.trip_price_class import TripPricePredictor
 from models.trip_price_class import load_model
-from graph_builder import attach_trips_to_graph
 import heapq
 from collections import deque, defaultdict
-from services.pricing import get_cost
+# Pricing is only needed for graph-based journeys; import lazily there to avoid heavy deps during DB-only ops
 from trip_decoder import decode_trip
 from typing import TypedDict, List
 
@@ -130,7 +132,8 @@ def compute_walk_distance_db(stop_id_a: int, stop_id_b: int):
 
 
 def search_stop_by_name_db(name: str, limit: int = 5):
-    """Search stops by name using ILIKE with trigram index (if available).
+    """Fuzzy search stops by name using pg_trgm similarity.
+    Orders by similarity score desc for deterministic results.
     Returns list of {stop_id, name, lon, lat} from operational `stop` table.
     """
     conn = get_db_connection()
@@ -138,11 +141,19 @@ def search_stop_by_name_db(name: str, limit: int = 5):
         return []
     try:
         cur = conn.cursor()
+        # Ensure pg_trgm exists (idempotent)
+        try:
+            cur.execute("CREATE EXTENSION IF NOT EXISTS pg_trgm;")
+        except Exception:
+            pass
         q = (
-            "SELECT stop_id, name, ST_X(geom_4326), ST_Y(geom_4326) "
-            "FROM stop WHERE name ILIKE %s LIMIT %s;"
+            "SELECT stop_id, name, ST_X(geom_4326), ST_Y(geom_4326), similarity(name, %s) AS score "
+            "FROM stop "
+            "WHERE name %% %s "  # pg_trgm similarity operator
+            "ORDER BY score DESC, name ASC "
+            "LIMIT %s;"
         )
-        cur.execute(q, (f"%{name}%", limit))
+        cur.execute(q, (name, name, limit))
         rows = cur.fetchall()
         return [{"stop_id": r[0], "name": r[1], "lon": float(r[2]), "lat": float(r[3])} for r in rows]
     except Exception:
@@ -187,8 +198,10 @@ def get_nearest_stop_db(lat: float, lon: float):
 def _get_routes_passing_stop(conn, stop_id: int, limit: int = 100):
     cur = conn.cursor()
     q = (
-        "SELECT r.route_id, r.name, rs.stop_sequence "
-        "FROM route_stop rs JOIN route r ON rs.route_id = r.route_id "
+        "SELECT t.route_id, r.name, rs.stop_sequence "
+        "FROM route_stop rs "
+        "JOIN trip t ON rs.trip_id = t.trip_id "
+        "JOIN route r ON t.route_id = r.route_id "
         "WHERE rs.stop_id = %s "
         "ORDER BY r.name, rs.stop_sequence LIMIT %s;"
     )
@@ -202,20 +215,25 @@ def _get_common_transfer_stops(conn, route_id_a: int, route_id_b: int, limit: in
     q = (
         "SELECT s.stop_id, s.name "
         "FROM route_stop rsa "
+        "JOIN trip ta ON rsa.trip_id = ta.trip_id "
         "JOIN route_stop rsb ON rsa.stop_id = rsb.stop_id "
+        "JOIN trip tb ON rsb.trip_id = tb.trip_id "
         "JOIN stop s ON s.stop_id = rsa.stop_id "
-        "WHERE rsa.route_id = %s AND rsb.route_id = %s "
-        "GROUP BY s.stop_id, s.name LIMIT %s;"
+        "WHERE ta.route_id = %s AND tb.route_id = %s "
+        "GROUP BY s.stop_id, s.name "
+        "LIMIT %s;"
     )
     cur.execute(q, (route_id_a, route_id_b, limit))
     return cur.fetchall()  # (stop_id, name)
 
 
 def find_journeys_db(origin_stop_id: int, dest_stop_id: int, max_results: int = 5) -> List[Journey]:
-    """Compute simple journeys directly from DB routes:
-    - 0-transfer: same route serves both origin and destination in order.
-    - 1-transfer: route A from origin to transfer stop + route B from transfer stop to destination.
-    Returns minimal set of journeys with rough costs and walking=0 (DB-only stage).
+    """Compute journeys entirely inside the DB for determinism and low token use.
+    - 0-transfer: same trip contains both stops in order.
+    - 1-transfer: trip A (origin->transfer) then trip B (transfer->dest) with same transfer stop.
+    Money uses route.cost aggregated by distinct routes in the path.
+    Walking distance is 0 for same-stop transfers; extendable with pgRouting if needed.
+    Results ordered deterministically by (money ASC, walk ASC, path text ASC).
     """
     conn = get_db_connection()
     if not conn:
@@ -223,78 +241,57 @@ def find_journeys_db(origin_stop_id: int, dest_stop_id: int, max_results: int = 
     results: List[Journey] = []
     try:
         cur = conn.cursor()
-        # 0-transfer: same route contains both stops with correct sequence order
-        q0 = (
-            "SELECT r.route_id, r.name, a.stop_sequence AS seq_o, b.stop_sequence AS seq_d "
-            "FROM route r "
-            "JOIN route_stop a ON a.route_id = r.route_id "
-            "JOIN route_stop b ON b.route_id = r.route_id "
-            "WHERE a.stop_id = %s AND b.stop_id = %s AND a.stop_sequence < b.stop_sequence "
-            "ORDER BY r.name LIMIT %s;"
+        q = (
+            "WITH zero AS (\n"
+            "  SELECT r.route_id::text AS path_text, r.cost::numeric AS money, 0::numeric AS walk\n"
+            "  FROM route r\n"
+            "  JOIN trip t ON t.route_id = r.route_id\n"
+            "  JOIN route_stop a ON a.trip_id = t.trip_id\n"
+            "  JOIN route_stop b ON b.trip_id = t.trip_id\n"
+            "  WHERE a.stop_id = %s AND b.stop_id = %s AND a.stop_sequence < b.stop_sequence\n"
+            "),\n"
+            "one AS (\n"
+            "  SELECT DISTINCT (r1.route_id::text || ',' || r2.route_id::text) AS path_text,\n"
+            "         (r1.cost + r2.cost)::numeric AS money, 0::numeric AS walk\n"
+            "  FROM route r1\n"
+            "  JOIN trip t1 ON t1.route_id = r1.route_id\n"
+            "  JOIN route_stop a_o ON a_o.trip_id = t1.trip_id\n"
+            "  JOIN route_stop a_t ON a_t.trip_id = t1.trip_id\n"
+            "  JOIN route r2\n"
+            "  JOIN trip t2 ON t2.route_id = r2.route_id\n"
+            "  JOIN route_stop b_t ON b_t.trip_id = t2.trip_id\n"
+            "  JOIN route_stop b_d ON b_d.trip_id = t2.trip_id\n"
+            "  WHERE a_o.stop_id = %s\n"
+            "    AND a_t.stop_id = b_t.stop_id\n"
+            "    AND b_d.stop_id = %s\n"
+            "    AND a_o.stop_sequence < a_t.stop_sequence\n"
+            "    AND b_t.stop_sequence < b_d.stop_sequence\n"
+            "    AND r1.route_id <> r2.route_id\n"
+            "),\n"
+            "orig_v AS (SELECT v.id FROM ways_vertices_pgr v, stop s WHERE s.stop_id = %s ORDER BY v.the_geom <-> s.geom_4326 LIMIT 1),\n"
+            "dest_v AS (SELECT v.id FROM ways_vertices_pgr v, stop s WHERE s.stop_id = %s ORDER BY v.the_geom <-> s.geom_4326 LIMIT 1),\n"
+            "walk_only AS (\n"
+            "  SELECT 'WALK'::text AS path_text, 0::numeric AS money,\n"
+            "         COALESCE((SELECT SUM(edge.cost)::numeric FROM pgr_dijkstra(\n"
+            "             'SELECT gid AS id, source, target, cost, reverse_cost FROM ways',\n"
+            "             (SELECT id FROM orig_v), (SELECT id FROM dest_v), false) AS route\n"
+            "             JOIN ways edge ON route.edge = edge.gid), NULL) AS walk\n"
+            ")\n"
+            "SELECT path_text, money, walk FROM zero\n"
+            "UNION ALL\n"
+            "SELECT path_text, money, walk FROM one\n"
+            "UNION ALL\n"
+            "SELECT path_text, money, walk FROM walk_only WHERE walk IS NOT NULL\n"
+            "ORDER BY money ASC, walk ASC, path_text ASC\n"
+            "LIMIT %s;"
         )
-        cur.execute(q0, (origin_stop_id, dest_stop_id, max_results))
-        for route_id, route_name, seq_o, seq_d in cur.fetchall():
-            # Money estimate: use pricing service if available, else flat cost
-            money = 4.0
-            path = [str(route_id)]
-            results.append({"path": path, "costs": {"money": money, "walk": 0.0}})
-
-        # 1-transfer: origin route to transfer stop, then transfer stop to destination route
-        # Get routes serving origin and destination
-        routes_o = _get_routes_passing_stop(conn, origin_stop_id)
-        routes_d = _get_routes_passing_stop(conn, dest_stop_id)
-        routes_o_ids = [(r[0], r[1]) for r in routes_o]
-        routes_d_ids = [(r[0], r[1]) for r in routes_d]
-
-        for rid_o, name_o in routes_o_ids[:10]:
-            for rid_d, name_d in routes_d_ids[:10]:
-                # Skip trivial same-route, already covered
-                if rid_o == rid_d:
-                    continue
-                transfers = _get_common_transfer_stops(conn, rid_o, rid_d, limit=5)
-                for t_stop_id, t_name in transfers:
-                    # Verify order along origin route: origin -> transfer
-                    cur.execute(
-                        "SELECT a.stop_sequence AS seq_o, b.stop_sequence AS seq_t FROM route_stop a JOIN route_stop b ON a.route_id=b.route_id WHERE a.route_id=%s AND a.stop_id=%s AND b.stop_id=%s;",
-                        (rid_o, origin_stop_id, t_stop_id),
-                    )
-                    row = cur.fetchone()
-                    if not row:
-                        continue
-                    seq_o, seq_t = row
-                    if seq_o is None or seq_t is None or seq_o >= seq_t:
-                        continue
-
-                    # Verify order along destination route: transfer -> destination
-                    cur.execute(
-                        "SELECT a.stop_sequence AS seq_t, b.stop_sequence AS seq_d FROM route_stop a JOIN route_stop b ON a.route_id=b.route_id WHERE a.route_id=%s AND a.stop_id=%s AND b.stop_id=%s;",
-                        (rid_d, t_stop_id, dest_stop_id),
-                    )
-                    row2 = cur.fetchone()
-                    if not row2:
-                        continue
-                    seq_t2, seq_d = row2
-                    if seq_t2 is None or seq_d is None or seq_t2 >= seq_d:
-                        continue
-
-                    # Compute walking distance at transfer point (if available)
-                    walk_dist = 0.0
-                    # Optional: calculate walk from origin to first stop or transfer walking
-                    # For now, set minimal walk for same-stop transfers
-                    # You can enhance with compute_walk_distance_db(origin_stop_id, t_stop_id)
-                    
-                    # Money estimate: two segments
-                    money = 8.0
-                    path = [str(rid_o), str(rid_d)]
-                    results.append({"path": path, "costs": {"money": money, "walk": walk_dist}})
-
-                    if len(results) >= max_results:
-                        break
-                if len(results) >= max_results:
-                    break
-            if len(results) >= max_results:
-                break
-    except Exception:
+        cur.execute(q, (origin_stop_id, dest_stop_id, origin_stop_id, dest_stop_id, origin_stop_id, dest_stop_id, max_results))
+        rows = cur.fetchall()
+        for path_text, money, walk in rows:
+            path = path_text.split(',') if ',' in path_text else [path_text]
+            results.append({"path": path, "costs": {"money": float(money), "walk": float(walk)}})
+    except Exception as e:
+        print(f"[ERROR] find_journeys_db: {e}")
         return results
     finally:
         try:
@@ -308,6 +305,8 @@ def get_nearest_node(lat: float, lon: float) -> int:
     """Get the nearest OSM node to the given latitude and longitude coordinates."""
     if GLOBAL_G is None:
         raise ValueError("Graph is not initialized. Call set_graph(G) first.")
+    if ox is None:
+        raise RuntimeError("osmnx is not available in this environment.")
     node_id = ox.distance.nearest_nodes(GLOBAL_G, lon, lat)
     return int(node_id)
 
@@ -400,6 +399,8 @@ def find_journeys(start_trips, goal_trips, max_transfers=2) -> List[Journey]:
     """
     graph = TRIP_GRAPH
     pathways_dict = PATHWAYS_DICT
+    # Lazy import to avoid model loading when not needed
+    from services.pricing import get_cost
     results = []
     # (current_trip_id, current_board_stop_id, path_list, cumulative_costs)
     queue = deque()
@@ -560,7 +561,13 @@ def format_journeys_for_user(journeys: List[Journey]) -> str:
         costs = journey["costs"]
         trans = max(0, len(path) - 1)
 
-        readable_path = [decode_trip(t) for t in path]
+        readable_path = []
+        for t in path:
+            try:
+                readable_path.append(decode_trip(t))
+            except Exception:
+                # Fallback: show DB route id or literal tag like WALK
+                readable_path.append(str(t))
         path_text = " → ".join(readable_path)
 
         # Tag lines based on metrics
