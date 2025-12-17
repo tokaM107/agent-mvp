@@ -62,8 +62,9 @@ def get_db_connection():
     db = os.environ.get("DB_NAME", "transport_db")
     user = os.environ.get("DB_USER", "postgres")
     pwd = os.environ.get("DB_PASSWORD", "postgres")
+    port = int(os.environ.get("DB_PORT", "5432"))
     try:
-        return psycopg2.connect(host=host, database=db, user=user, password=pwd)
+        return psycopg2.connect(host=host, database=db, user=user, password=pwd, port=port)
     except Exception:
         return None
 
@@ -227,7 +228,13 @@ def _get_common_transfer_stops(conn, route_id_a: int, route_id_b: int, limit: in
     return cur.fetchall()  # (stop_id, name)
 
 
-def find_journeys_db(origin_stop_id: int, dest_stop_id: int, max_results: int = 5) -> List[Journey]:
+def find_journeys_db(
+    origin_stop_id: int,
+    dest_stop_id: int,
+    max_results: int = 5,
+    origin_walk_m: float = 0.0,
+    dest_walk_m: float = 0.0,
+) -> List[Journey]:
     """Compute journeys entirely inside the DB for determinism and low token use.
     - 0-transfer: same trip contains both stops in order.
     - 1-transfer: trip A (origin->transfer) then trip B (transfer->dest) with same transfer stop.
@@ -243,7 +250,9 @@ def find_journeys_db(origin_stop_id: int, dest_stop_id: int, max_results: int = 
         cur = conn.cursor()
         q = (
             "WITH zero AS (\n"
-            "  SELECT r.route_id::text AS path_text, r.cost::numeric AS money, 0::numeric AS walk\n"
+            "  SELECT r.route_id::text AS path_text, r.cost::numeric AS money, (%s + %s)::numeric AS walk,\n"
+            "         t.trip_id AS trip1_id, a.stop_id AS leg1_start, b.stop_id AS leg1_end,\n"
+            "         NULL::integer AS trip2_id, NULL::integer AS leg2_start, NULL::integer AS leg2_end\n"
             "  FROM route r\n"
             "  JOIN trip t ON t.route_id = r.route_id\n"
             "  JOIN route_stop a ON a.trip_id = t.trip_id\n"
@@ -252,7 +261,9 @@ def find_journeys_db(origin_stop_id: int, dest_stop_id: int, max_results: int = 
             "),\n"
             "one AS (\n"
             "  SELECT DISTINCT (r1.route_id::text || ',' || r2.route_id::text) AS path_text,\n"
-            "         (r1.cost + r2.cost)::numeric AS money, 0::numeric AS walk\n"
+            "         (r1.cost + r2.cost)::numeric AS money, (%s + %s)::numeric AS walk,\n"
+            "         t1.trip_id AS trip1_id, a_o.stop_id AS leg1_start, a_t.stop_id AS leg1_end,\n"
+            "         t2.trip_id AS trip2_id, b_t.stop_id AS leg2_start, b_d.stop_id AS leg2_end\n"
             "  FROM route r1\n"
             "  JOIN trip t1 ON t1.route_id = r1.route_id\n"
             "  JOIN route_stop a_o ON a_o.trip_id = t1.trip_id\n"
@@ -275,21 +286,51 @@ def find_journeys_db(origin_stop_id: int, dest_stop_id: int, max_results: int = 
             "         COALESCE((SELECT SUM(edge.cost)::numeric FROM pgr_dijkstra(\n"
             "             'SELECT gid AS id, source, target, cost, reverse_cost FROM ways',\n"
             "             (SELECT id FROM orig_v), (SELECT id FROM dest_v), false) AS route\n"
-            "             JOIN ways edge ON route.edge = edge.gid), NULL) AS walk\n"
+            "             JOIN ways edge ON route.edge = edge.gid), NULL) + (%s + %s) AS walk,\n"
+            "         NULL::integer AS trip1_id, NULL::integer AS leg1_start, NULL::integer AS leg1_end,\n"
+            "         NULL::integer AS trip2_id, NULL::integer AS leg2_start, NULL::integer AS leg2_end\n"
             ")\n"
-            "SELECT path_text, money, walk FROM zero\n"
+            "SELECT path_text, money, walk, trip1_id, leg1_start, leg1_end, trip2_id, leg2_start, leg2_end FROM zero\n"
             "UNION ALL\n"
-            "SELECT path_text, money, walk FROM one\n"
+            "SELECT path_text, money, walk, trip1_id, leg1_start, leg1_end, trip2_id, leg2_start, leg2_end FROM one\n"
             "UNION ALL\n"
-            "SELECT path_text, money, walk FROM walk_only WHERE walk IS NOT NULL\n"
+            "SELECT path_text, money, walk, trip1_id, leg1_start, leg1_end, trip2_id, leg2_start, leg2_end FROM walk_only WHERE walk IS NOT NULL\n"
             "ORDER BY money ASC, walk ASC, path_text ASC\n"
             "LIMIT %s;"
         )
-        cur.execute(q, (origin_stop_id, dest_stop_id, origin_stop_id, dest_stop_id, origin_stop_id, dest_stop_id, max_results))
+        cur.execute(
+            q,
+            (
+                origin_walk_m, dest_walk_m,  # zero.walk
+                origin_walk_m, dest_walk_m,  # one.walk
+                origin_stop_id, dest_stop_id,  # zero WHERE
+                origin_stop_id, dest_stop_id,  # one WHERE
+                origin_stop_id, dest_stop_id,  # orig_v/dest_v
+                origin_walk_m, dest_walk_m,    # walk_only extra
+                max_results,
+            ),
+        )
         rows = cur.fetchall()
-        for path_text, money, walk in rows:
+        # Hybrid pricing: compute money via ML if available
+        try:
+            from services.pricing import get_cost
+        except Exception:
+            get_cost = None
+        for (path_text, money_db, walk_db, trip1_id, leg1_start, leg1_end, trip2_id, leg2_start, leg2_end) in rows:
             path = path_text.split(',') if ',' in path_text else [path_text]
-            results.append({"path": path, "costs": {"money": float(money), "walk": float(walk)}})
+            walk_val = float(walk_db)
+            money_val = float(money_db)
+            if get_cost:
+                try:
+                    if trip1_id and not trip2_id:
+                        money_val = float(get_cost(int(trip1_id), int(leg1_start), int(leg1_end)))
+                    elif trip1_id and trip2_id:
+                        m1 = float(get_cost(int(trip1_id), int(leg1_start), int(leg1_end)))
+                        m2 = float(get_cost(int(trip2_id), int(leg2_start), int(leg2_end)))
+                        money_val = m1 + m2
+                except Exception:
+                    money_val = float(money_db)
+            results.append({"path": path, "costs": {"money": money_val, "walk": walk_val}})
     except Exception as e:
         print(f"[ERROR] find_journeys_db: {e}")
         return results

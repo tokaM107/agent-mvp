@@ -145,7 +145,16 @@ def run_once(query: str) -> str:
     # Prefer DB journeys if DB is enabled and nearest DB stops are available
     best = []
     if db_first and db_near_src and db_near_dst:
-        db_journeys = find_journeys_db(db_near_src["stop_id"], db_near_dst["stop_id"], max_results=5)
+        # Include walking distance to first stop and from last stop
+        origin_walk = float(db_near_src.get("distance_m", 0.0) or 0.0)
+        dest_walk = float(db_near_dst.get("distance_m", 0.0) or 0.0)
+        db_journeys = find_journeys_db(
+            db_near_src["stop_id"],
+            db_near_dst["stop_id"],
+            max_results=5,
+            origin_walk_m=origin_walk,
+            dest_walk_m=dest_walk,
+        )
         if db_journeys:
             best = filter_best_journeys(db_journeys, max_results=5)
 
