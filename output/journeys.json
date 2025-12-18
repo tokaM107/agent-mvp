@@ -6,10 +6,92 @@
     "lon": 30.0077653
   },
   "destination_geo": {
-    "lat": 31.221487,
-    "lon": 29.9419365
+    "lat": 31.2726654,
+    "lon": 30.008007
   },
   "start_node": 6944866060,
-  "dest_node": 5089422578,
-  "journeys": []
+  "dest_node": 6944866034,
+  "journeys": [
+    {
+      "path": [
+        "OI7bd_u7laDmk8SxgppK0-07:00:00"
+      ],
+      "decoded_path": [
+        "OI7bd_u7laDmk8SxgppK0-07:00:00"
+      ],
+      "costs": {
+        "money": 4.25,
+        "walk": 167.10377331270104
+      },
+      "transfers": 0
+    },
+    {
+      "path": [
+        "OI7bd_u7laDmk8SxgppK0-07:00:00",
+        "RbB2w0p-_BgwRa6AbSa-b-07:00:00",
+        "FUo5FExiKwUTpyTUJYA7R-07:00:00"
+      ],
+      "decoded_path": [
+        "OI7bd_u7laDmk8SxgppK0-07:00:00",
+        "RbB2w0p-_BgwRa6AbSa-b-07:00:00",
+        "FUo5FExiKwUTpyTUJYA7R-07:00:00"
+      ],
+      "costs": {
+        "money": 12.25,
+        "walk": 439.56470571439144
+      },
+      "transfers": 2
+    },
+    {
+      "path": [
+        "OI7bd_u7laDmk8SxgppK0-07:00:00",
+        "9ByH2YQ54cshi1Sj8kgPQ-07:00:00",
+        "_xaRNY3_AfOnhpf5yTE3A-07:00:00"
+      ],
+      "decoded_path": [
+        "OI7bd_u7laDmk8SxgppK0-07:00:00",
+        "9ByH2YQ54cshi1Sj8kgPQ-07:00:00",
+        "_xaRNY3_AfOnhpf5yTE3A-07:00:00"
+      ],
+      "costs": {
+        "money": 12.75,
+        "walk": 439.56470571439144
+      },
+      "transfers": 2
+    },
+    {
+      "path": [
+        "OI7bd_u7laDmk8SxgppK0-07:00:00",
+        "3CgzuUO_dn1teCfMyugyc-07:00:00",
+        "Hn0eoDFbdIiLk49QaqFeX-07:00:00"
+      ],
+      "decoded_path": [
+        "OI7bd_u7laDmk8SxgppK0-07:00:00",
+        "3CgzuUO_dn1teCfMyugyc-07:00:00",
+        "Hn0eoDFbdIiLk49QaqFeX-07:00:00"
+      ],
+      "costs": {
+        "money": 13.25,
+        "walk": 439.56470571439144
+      },
+      "transfers": 2
+    },
+    {
+      "path": [
+        "OI7bd_u7laDmk8SxgppK0-07:00:00",
+        "3CgzuUO_dn1teCfMyugyc-07:00:00",
+        "zivMUtHDofqSlzEUoK8F0-07:00:00"
+      ],
+      "decoded_path": [
+        "OI7bd_u7laDmk8SxgppK0-07:00:00",
+        "3CgzuUO_dn1teCfMyugyc-07:00:00",
+        "zivMUtHDofqSlzEUoK8F0-07:00:00"
+      ],
+      "costs": {
+        "money": 13.25,
+        "walk": 579.9114031369003
+      },
+      "transfers": 2
+    }
+  ]
 }
