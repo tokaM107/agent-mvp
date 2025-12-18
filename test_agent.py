@@ -149,11 +149,9 @@ def run_once(query: str) -> str:
         if db_journeys:
             best = filter_best_journeys(db_journeys, max_results=5)
 
+    # NO FALLBACK: Database only mode
     if not best:
-        start_trips = explore_trips(src_node)
-        goal_trips = explore_trips(dst_node)
-        journeys = find_journeys(start_trips, goal_trips)
-        best = filter_best_journeys(journeys, max_results=5)
+        return "❌ لم يتم العثور على مسارات متاحة في قاعدة البيانات. تأكد من أن المحطات موجودة في النظام."
 
     # Persist journeys to JSON for later querying
     try:
