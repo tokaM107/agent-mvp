@@ -3,80 +3,44 @@ import google.generativeai as genai
 from geopy.geocoders import Nominatim
 import time
 import pandas as pd
-import osmnx as ox
 from models.trip_price_class import TripPricePredictor
-import heapq
 from tools import *
 from dotenv import load_dotenv
 from pathlib import Path
 import os
-import pickle
 import re
 import json
 
 # Load environment variables
 load_dotenv()
 
-# Cache the graph to avoid reprocessing each run
-CACHE_GRAPH_PATH = "graph_cache.pkl"
-if os.path.exists(CACHE_GRAPH_PATH):
-    with open(CACHE_GRAPH_PATH, "rb") as f:
-        g = pickle.load(f)
-else:
-    g = ox.graph_from_xml("labeled.osm", bidirectional=True, simplify=True)
-    g = attach_trips_to_graph(g)
-    with open(CACHE_GRAPH_PATH, "wb") as f:
-        pickle.dump(g, f)
-set_graph(g)
-
-print(" Graph initialized")
-print(g.nodes[list(g.nodes)[0]].keys())
+print(" DB-only mode: skipping OSM graph initialization")
 
 
-# Cache pathways graph mapping
-CACHE_PATHWAYS_PATH = "pathways_cache.pkl"
-if os.path.exists(CACHE_PATHWAYS_PATH):
-    with open(CACHE_PATHWAYS_PATH, "rb") as f:
-        trip_graph, pathways_dict = pickle.load(f)
-else:
-    pathways = pd.read_csv('trip_pathways.csv')
-    trip_graph = defaultdict(dict)
-    pathways_dict = pathways.to_dict('index')
-    for idx, row in pathways.iterrows():
-        trip_graph[row['start_trip_id']][row['end_trip_id']] = idx 
-    with open(CACHE_PATHWAYS_PATH, "wb") as f:
-        pickle.dump((trip_graph, pathways_dict), f)
-set_trip_graph(trip_graph, pathways_dict)
+print(" DB-only mode: skipping pathways graph caching")
 
 
 
 
 system_prompt = """
-You are a smart assistant specialized in Alexandria public transportation. 
-You have access to the following tools:
+You are a smart assistant specialized in Alexandria public transportation.
+You must use DATABASE tools only:
 
-1. geocode_address(address) -> returns the latitude and longitude of the address.
-2. get_nearest_node(lat, lon) -> returns the nearest OSM node ID.
-3. explore_trips(source_node) -> returns all trips starting from this node, including walking distance.
-4. find_journeys(start_trips, goal_trips) -> returns all possible journeys with path and costs (money, walking distance).
-5. filter_best_journeys(journeys, max_results=5) -> returns the best journeys based on shortest walking distance and lowest cost.
-6. format_journeys_for_user(journeys) -> returns a user-friendly Arabic description of the journeys.
+1. search_stop_by_name_db(name) -> returns candidate stops from DB.
+2. get_nearest_stop_db(lat, lon) -> returns nearest DB stop.
+3. find_journeys_db(origin_stop_id, dest_stop_id) -> returns journeys (path, money, walk).
+4. filter_best_journeys(journeys) -> filter top journeys.
+5. format_journeys_for_user(journeys) -> Arabic formatted output.
 
-You must always follow this workflow:
-1. Find the coordinates of the start and destination using geocode_address. IMPORTANT: Always append ", Alexandria, Egypt" to the address provided by the user to ensure accuracy (e.g., if user says "Asafra", search for "Asafra, Alexandria, Egypt").
-2. Convert each location into the nearest OSM node using get_nearest_node.
-3. Explore trips from both start and destination nodes using explore_trips.
-4. Find all possible journeys using find_journeys.
-5. Filter the top journeys using filter_best_journeys.
-6. Format the filtered journeys for the user using format_journeys_for_user.
-7. Return only the final formatted journey description to the user. Do not return any intermediate data.
+Workflow:
+1. Parse origin/destination via Gemini.
+2. Resolve to DB stops and compute journeys via find_journeys_db.
+3. Return formatted journeys only.
 
 Output style requirements:
 - Be clear, friendly, and concise in Arabic.
-- Use headings, bullets, and icons (🛣 💰 🚶‍♂️) similar to the tools output.
-- Start with a brief confirmation of origin and destination, then list top journeys.
-- For each journey: show the path (trip names), total price, and total walking distance.
-- Avoid raw JSON; return a human-friendly formatted text only.
+- Use headings, bullets, and icons (🛣 💰 🚶‍♂️).
+- Avoid raw JSON; return human-friendly text only.
 """
 
 
@@ -151,7 +115,7 @@ def run_once(query: str) -> str:
 
     # NO FALLBACK: Database only mode
     if not best:
-        return "❌ لم يتم العثور على مسارات متاحة في قاعدة البيانات. تأكد من أن المحطات موجودة في النظام."
+        return " لم يتم العثور على مسارات متاحة في قاعدة البيانات. تأكد من أن المحطات موجودة في النظام."
 
     # Persist journeys to JSON for later querying
     try:
