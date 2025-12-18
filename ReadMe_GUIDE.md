@@ -1,22 +1,12 @@
-# 🚀 Complete Deployment Guide
 
-## ✅ What's Ready Now
-
-### 1. **Code Status - ALL FIXED**
-- ✅ SQL queries fixed (no more "missing FROM" or "relation does not exist" errors)
-- ✅ Arabic formatting enhanced with detailed route descriptions
-- ✅ osm2pgrouting added to Dockerfile
-- ✅ API key configuration verified in docker-compose.yml
-- ✅ Pricing model ready (models/trip_price_model.joblib exists)
-
-### 2. **Database Tables Ready**
+###  **Database Tables Ready**
 The database will automatically create these tables on first run:
-- ✅ `route` - Transport routes (microbuses, buses, etc.)
-- ✅ `trip` - Specific scheduled trips
-- ✅ `stop` - Bus/microbus stops with GPS coordinates
-- ✅ `route_stop` - Stops in each trip with sequences
-- ✅ `route_geometry` - Route shapes/paths
-- ✅ Extensions: PostGIS, pgRouting, pg_trgm (for fuzzy search)
+-  `route` - Transport routes (microbuses, buses, etc.)
+-  `trip` - Specific scheduled trips
+-  `stop` - Bus/microbus stops with GPS coordinates
+-  `route_stop` - Stops in each trip with sequences
+-  `route_geometry` - Route shapes/paths
+-  Extensions: PostGIS, pgRouting, pg_trgm (for fuzzy search)
 
 **pgRouting tables (need manual seeding):**
 - ⚠️ `ways` - Road network segments (created by osm2pgrouting)
@@ -39,13 +29,18 @@ The database will automatically create these tables on first run:
 
 ---
 
-## 📋 Step-by-Step Deployment
+##  Step-by-Step Deployment
 
 ### **Step 1: Build & Start Containers**
 
 **Navigate to the database folder:**
 ```powershell
 cd "C:\Users\Rowan\OneDrive\Desktop\collage\graduation project\geniAi\agent\agent-mvp\final-project-database"
+```
+
+**Load API key from .env into PowerShell environment:**
+```powershell
+$env:GOOGLE_API_KEY = (Get-Content ..\.env | Select-String 'GOOGLE_API_KEY' | ForEach-Object { $_ -replace 'GOOGLE_API_KEY=', '' }).ToString().Trim()
 ```
 
 **Build and start all services:**
@@ -58,6 +53,7 @@ This will:
 - Build the Python agent image
 - Start 3 containers: `transport-db`, `transport-pgadmin`, `transport-agent`
 - Load GTFS data automatically (routes, stops, trips)
+- Pass API key from environment to agent container
 - Create all database tables
 
 **Verify containers are running:**
@@ -130,36 +126,102 @@ Expected output: Both should show numbers > 0
 
 ---
 
-### **Step 4: Verify API Key in Agent Container same directory **
+### **Step 4: Run the Agent**
 
+**From the database folder (same directory as docker-compose.yml):**
 ```powershell
-docker exec transport-agent env | Select-String "GOOGLE_API_KEY"
-```
-
-Expected output:
-```
-GOOGLE_API_KEY=AIzaSyD_......
-```
-
-If not shown, check `.env` file exists in agent-mvp folder.
-
----
-
-### **Step 5: Run the Agent**
-
-**Navigate to agent folder:**
-```powershell
-cd "C:\Users\Rowan\OneDrive\Desktop\collage\graduation project\geniAi\agent\agent-mvp"
-```
-
-**Run test agent:**
-```powershell
-docker exec -it transport-agent python test_agent.py
+docker exec transport-agent python test_agent.py
 ```
 
 **Or run with specific query:**
 ```powershell
-docker exec -it transport-agent python -c "import test_agent; print(test_agent.run_once('أريد الذهاب من العصافرة إلى المنشية'))"
+docker exec transport-agent python -c "import test_agent; print(test_agent.run_once('أريد الذهاب من العصافرة إلى المنشية'))"
+```
+
+**Verify API key is loaded (optional check):**
+```powershell
+docker exec transport-agent bash -c 'echo $GOOGLE_API_KEY'
+```
+
+Expected output: Your API key from .env file
+
+---
+
+## 🔄 Updating API Key
+
+If you need to change the API key:
+
+**1. Edit .env file:**
+```powershell
+notepad "C:\Users\Rowan\OneDrive\Desktop\collage\graduation project\geniAi\agent\agent-mvp\.env"
+```
+
+**2. Load new key into PowerShell environment:**
+```powershell
+cd "C:\Users\Rowan\OneDrive\Desktop\collage\graduation project\geniAi\agent\agent-mvp\final-project-database"
+$env:GOOGLE_API_KEY = (Get-Content ..\.env | Select-String 'GOOGLE_API_KEY' | ForEach-Object { $_ -replace 'GOOGLE_API_KEY=', '' }).ToString().Trim()
+```
+
+**3. Restart containers to reload environment:**
+```powershell
+docker compose down
+docker compose up -d
+```
+
+**4. Verify new key loaded:**
+```powershell
+docker exec transport-agent bash -c 'echo $GOOGLE_API_KEY'
+```
+
+---
+
+### **Step 5 (Optional): Verify Everything**
+
+**Check database has data:**
+```powershell
+docker exec transport-db psql -U postgres -d transport_db -c "SELECT COUNT(*) FROM stop;"
+docker exec transport-db psql -U postgres -d transport_db -c "SELECT COUNT(*) FROM route;"
+```
+
+**Check pgRouting tables (if seeded):**
+```powershell
+docker exec transport-db psql -U postgres -d transport_db -c "SELECT COUNT(*) FROM ways;"
+docker exec transport-db psql -U postgres -d transport_db -c "SELECT COUNT(*) FROM ways_vertices_pgr;"
+```
+
+**Check container status:**
+```powershell
+docker ps
+```
+
+Should show 3 containers running:
+- `transport-db` - Database
+- `transport-agent` - Python agent
+- `transport-pgadmin` - Web UI (http://localhost:8080)
+
+---
+
+## 📋 Complete Quick Reference
+
+**From `final-project-database/` folder:**
+
+```powershell
+# 1. Navigate to database folder
+cd "C:\Users\Rowan\OneDrive\Desktop\collage\graduation project\geniAi\agent\agent-mvp\final-project-database"
+
+# 2. Load API key from .env
+$env:GOOGLE_API_KEY = (Get-Content ..\.env | Select-String 'GOOGLE_API_KEY' | ForEach-Object { $_ -replace 'GOOGLE_API_KEY=', '' }).ToString().Trim()
+
+# 3. Start containers
+docker compose up -d --build
+
+# 4. Seed pgRouting (first time only, or after data changes)
+docker cp ..\labeled.osm transport-db:/tmp/labeled.osm
+docker exec -it transport-db osm2pgrouting -f /tmp/labeled.osm -d transport_db -U postgres -h localhost -W postgres --clean
+# Enter password: postgres
+
+# 5. Run agent
+docker exec transport-agent python test_agent.py
 ```
 
 ---
@@ -174,15 +236,34 @@ docker exec -it transport-agent python -c "import test_agent; print(test_agent.r
 
 ##  Troubleshooting
 
+### Problem: "Your API key was reported as leaked"
+
+**Solution:**
+1. Get new API key from: https://aistudio.google.com/app/apikey
+2. Update `.env` file with new key
+3. **IMPORTANT:** Load new key and restart containers:
+   ```powershell
+   cd final-project-database
+   $env:GOOGLE_API_KEY = (Get-Content ..\.env | Select-String 'GOOGLE_API_KEY' | ForEach-Object { $_ -replace 'GOOGLE_API_KEY=', '' }).ToString().Trim()
+   docker compose down
+   docker compose up -d
+   ```
+4. Verify new key loaded:
+   ```powershell
+   docker exec transport-agent bash -c 'echo $GOOGLE_API_KEY'
+   ```
+
+**Note:** Simply restarting with `docker compose restart` won't reload the .env file - you MUST use `docker compose down` then `up`.
+
 ### Problem: "No containers running"
 ```powershell
-docker compose up -d --build
+docker compose up -d
 ```
 
 ### Problem: "Database connection failed"
 ```powershell
 # Check if DB is healthy
-docker exec -it transport-db pg_isready -U postgres -d transport_db
+docker exec transport-db pg_isready -U postgres -d transport_db
 
 # Restart if needed
 docker restart transport-db

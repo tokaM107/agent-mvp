@@ -121,4 +121,4 @@ def run_agent(user_query: str):
 
 if __name__ == "__main__":
     # Test
-    print(run_agent("عايز اروح من الموقف الجديد للعصافرة"))
+    print(run_agent("عايز اروح من سان استفانو للعصافرة"))

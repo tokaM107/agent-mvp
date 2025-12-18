@@ -4,7 +4,7 @@ from geopy.extra.rate_limiter import RateLimiter
 import os
 import psycopg2
 import time
-from models.trip_price_class import TripPricePredictor, load_model
+from models.trip_price_class import TripPricePredictor, load_model, TripPricePreedictor
 from typing import TypedDict, List
 import pandas as pd
 

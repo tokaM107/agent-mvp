@@ -37,3 +37,6 @@ class TripPricePredictor(BaseEstimator, RegressorMixin):
 def load_model(joblib_path):
     model = load(joblib_path)
     return TripPricePredictor(model)
+
+# Fix for pickle loading error - Alias for typo in saved model
+TripPricePreedictor = TripPricePredictor
