@@ -123,17 +123,31 @@ def get_nearest_stop_db(lat: float, lon: float):
     except: return None
     finally: conn.close()
 
-def predict_trip_price(route_id, distance_km=5.0):
-    if PRICE_MODEL is None: return 5.0
+def predict_trip_price(distance_km: float) -> float:
+    """يتوقع سعر الرحلة من خلال النموذج بناءً على مسافة الرحلة بالكيلومترات."""
+    if PRICE_MODEL is None:
+        raise RuntimeError("Price model not loaded")
+    return float(PRICE_MODEL.predict([distance_km])[0])
+
+def get_route_cost_db(route_id: int) -> float:
+    """يقرأ السعر المسجل للخط من جدول route كحل بديل لو الموديل مش متاح."""
+    conn = get_db_connection()
+    if not conn:
+        return 0.0
     try:
-        features = pd.DataFrame([{
-            'route_id': route_id,
-            'distance_km': distance_km,
-            'stops_count': 10
-        }])
-        return float(PRICE_MODEL.predict(features)[0])
-    except:
-        return 5.0
+        cur = conn.cursor()
+        cur.execute("SELECT cost FROM route WHERE route_id = %s", (route_id,))
+        r = cur.fetchone()
+        if not r:
+            return 0.0
+        return float(r[0] or 0.0)
+    except Exception:
+        return 0.0
+    finally:
+        try:
+            conn.close()
+        except Exception:
+            pass
 
 def decode_route_from_db(route_id):
     if str(route_id) == 'WALK': return "مشي"
@@ -147,7 +161,7 @@ def decode_route_from_db(route_id):
             if res: name = res[0]
         except: pass
         finally: conn.close()
-    return name
+    return arabize_text(name)
 
 def find_journeys_db(origin_stop_id: int, dest_stop_id: int, max_results: int = 5) -> List[Journey]:
     """
@@ -175,15 +189,18 @@ def find_journeys_db(origin_stop_id: int, dest_stop_id: int, max_results: int = 
                     (SELECT id FROM ways_vertices_pgr ORDER BY the_geom <-> (SELECT geom_4326 FROM stop WHERE stop_id = %s) LIMIT 1),
                     (SELECT id FROM ways_vertices_pgr ORDER BY the_geom <-> (SELECT geom_4326 FROM stop WHERE stop_id = %s) LIMIT 1),
                     false
-                )), 0)
+                )), 0),
+                (%s::text || ',' || %s::text) AS stops_path
             """
-            walk_params = [origin_stop_id, dest_stop_id]
+            walk_params = [origin_stop_id, dest_stop_id, origin_stop_id, dest_stop_id]
         
         # استعلام SQL ضخم يجمع كل الاحتمالات (حتى 3 تبديلات)
+        internal_limit = max(max_results * 10, 50)
         q = f"""
             SELECT * FROM (
                 -- 0 Transfers (Direct)
-                  SELECT r.route_id::text as path, 0::numeric as money, 0::numeric as walk
+            SELECT r.route_id::text as path, r.cost::numeric as money, 0::numeric as walk,
+                   (a.stop_id::text || ',' || b.stop_id::text) AS stops_path
                 FROM route r
                 JOIN trip t ON t.route_id = r.route_id
                 JOIN route_stop a ON a.trip_id = t.trip_id
@@ -193,8 +210,9 @@ def find_journeys_db(origin_stop_id: int, dest_stop_id: int, max_results: int = 
                 UNION ALL
                 
                 -- 1 Transfer
-                  SELECT (r1.route_id::text || ',' || r2.route_id::text),
-                      0::numeric, 0::numeric
+            SELECT (r1.route_id::text || ',' || r2.route_id::text),
+                   (r1.cost + r2.cost)::numeric, 0::numeric,
+                   (a1.stop_id::text || ',' || a2.stop_id::text || ',' || b2.stop_id::text) AS stops_path
                 FROM route_stop a1
                 JOIN trip t1 ON a1.trip_id = t1.trip_id
                 JOIN route r1 ON t1.route_id = r1.route_id
@@ -208,8 +226,9 @@ def find_journeys_db(origin_stop_id: int, dest_stop_id: int, max_results: int = 
                 UNION ALL
                 
                 -- 2 Transfers
-                  SELECT (r1.route_id::text || ',' || r2.route_id::text || ',' || r3.route_id::text),
-                      0::numeric, 0::numeric
+                                SELECT (r1.route_id::text || ',' || r2.route_id::text || ',' || r3.route_id::text),
+                                             (r1.cost + r2.cost + r3.cost)::numeric, 0::numeric,
+                                             (a1.stop_id::text || ',' || a2.stop_id::text || ',' || c1.stop_id::text || ',' || c2.stop_id::text) AS stops_path
                 FROM route_stop a1
                 JOIN trip t1 ON a1.trip_id = t1.trip_id
                 JOIN route r1 ON t1.route_id = r1.route_id
@@ -228,8 +247,9 @@ def find_journeys_db(origin_stop_id: int, dest_stop_id: int, max_results: int = 
                 UNION ALL
                 
                 -- 3 Transfers
-                  SELECT (r1.route_id::text || ',' || r2.route_id::text || ',' || r3.route_id::text || ',' || r4.route_id::text),
-                      0::numeric, 0::numeric
+                                SELECT (r1.route_id::text || ',' || r2.route_id::text || ',' || r3.route_id::text || ',' || r4.route_id::text),
+                                             (r1.cost + r2.cost + r3.cost + r4.cost)::numeric, 0::numeric,
+                                             (a1.stop_id::text || ',' || a2.stop_id::text || ',' || c1.stop_id::text || ',' || d1.stop_id::text || ',' || d2.stop_id::text) AS stops_path
                 FROM route_stop a1
                 JOIN trip t1 ON a1.trip_id = t1.trip_id
                 JOIN route r1 ON t1.route_id = r1.route_id
@@ -251,33 +271,47 @@ def find_journeys_db(origin_stop_id: int, dest_stop_id: int, max_results: int = 
 
                 {walk_query}
             ) AS all_routes
-            ORDER BY money ASC, walk ASC
-            LIMIT %s;
+            LIMIT {internal_limit};
         """
         
         # Params: (Zero*2) + (One*2) + (Two*2) + (Three*2) + [Walk*2] + Limit
         params = [origin_stop_id, dest_stop_id] * 4 
         params += walk_params
-        params += [max_results]
+        # no final limit param used; we set higher internal limit above
 
         cur.execute(q, tuple(params))
         rows = cur.fetchall()
 
-        for path_str, _, walk_dist in rows:
+        seen = set()
+        for path_str, money_db, walk_dist, stops_path in rows:
             if path_str == 'WALK_NO_DATA': continue
             paths = path_str.split(',')
+            # Deduplicate identical path combos
+            key = tuple(paths)
+            if key in seen:
+                continue
+            seen.add(key)
             total_price = 0.0
+            stop_ids = [int(s) for s in stops_path.split(',') if s]
             
             for p in paths:
                 if p == 'WALK': continue
+                # use distance-based model per leg
                 try:
-                    price = predict_trip_price(int(p))
-                    total_price += price
-                except:
-                    total_price += 2.0 
+                    leg_prices = []
+                    for i in range(len(stop_ids) - 1):
+                        dist_m = compute_path_meters_between_stops(stop_ids[i], stop_ids[i+1])
+                        dist_km = max(dist_m / 1000.0, 0.01)
+                        leg_prices.append(predict_trip_price(dist_km))
+                    total_price = float(sum(leg_prices))
+                except Exception:
+                    # fallback to DB aggregated money
+                    total_price = float(money_db or 0.0)
+                break
             
             results.append({
                 "path": paths,
+                "stops_path": stop_ids,
                 "costs": {
                     "money": float(total_price),
                     "walk": float(walk_dist or 0)
@@ -289,7 +323,37 @@ def find_journeys_db(origin_stop_id: int, dest_stop_id: int, max_results: int = 
     finally:
         if conn: conn.close()
     
+    # Sort by price then walk, and cap to requested max_results
+    results = sorted(results, key=lambda x: (x["costs"]["money"], x["costs"]["walk"]))[:max_results]
     return results
+
+def arabize_text(text: str) -> str:
+    """تعريب أسماء الخطوط الشائعة لتحسين عرض الرد النهائي."""
+    if not text:
+        return text
+    mapping = {
+        'Asafra': 'العصافرة',
+        'El-Mandara': 'المندرة',
+        'El-Mawqaf El-Geded': 'الموقف الجديد',
+        'El-Mawqaf Geded': 'الموقف الجديد',
+        'El-Mansheya': 'المنشية',
+        'Raml Station': 'محطة الرمل',
+        'San Stefano': 'سان ستيفانو',
+        'Victoria': 'فيكتوريا',
+        'Gleem': 'جليم',
+        'Stanley': 'ستانلي',
+        'Miami': 'ميامي',
+        'Sidi Bishr': 'سيدي بشر',
+        'Sidi Gabir': 'سيدي جابر',
+        'Abu Qir': 'ابو قير',
+        'Kilo 21': 'الكيلو 21',
+        'Agamy': 'العجمي'
+    }
+    parts = [p.strip() for p in text.split(' - ')]
+    arabized = []
+    for p in parts:
+        arabized.append(mapping.get(p, p))
+    return ' - '.join(arabized)
 
 def compute_walk_meters_point_to_stop(lat: float, lon: float, stop_id: int) -> float:
     """يحسب مسافة المشي من نقطة (lat, lon) لأقرب نقطة وصول لمحطة stop_id باستخدام pgRouting إن توفرت.
@@ -336,6 +400,102 @@ def compute_walk_meters_point_to_stop(lat: float, lon: float, stop_id: int) -> f
             cur.execute(q, (lon, lat, stop_id))
             r = cur.fetchone()
             return float(r[0] or 0.0)
+    except Exception:
+        return 0.0
+    finally:
+        try:
+            conn.close()
+        except Exception:
+            pass
+
+def compute_path_meters_between_stops(stop_a_id: int, stop_b_id: int) -> float:
+    """يحسِب مسافة الطريق (بالأمتار) بين محطتين عبر شبكة الطرق باستخدام pgRouting،
+    مع fallback للمسافة الجيوديسية إذا لم توجد مسارات متصلة."""
+    conn = get_db_connection()
+    if not conn:
+        return 0.0
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT to_regclass('public.ways');")
+        has_routing = cur.fetchone()[0] is not None
+
+        if has_routing:
+            q = """
+                SELECT COALESCE((SELECT SUM(cost) FROM pgr_dijkstra(
+                    'SELECT gid as id, source, target, cost, reverse_cost FROM ways',
+                    (SELECT id FROM ways_vertices_pgr ORDER BY the_geom <-> (SELECT geom_4326 FROM stop WHERE stop_id = %s) LIMIT 1),
+                    (SELECT id FROM ways_vertices_pgr ORDER BY the_geom <-> (SELECT geom_4326 FROM stop WHERE stop_id = %s) LIMIT 1),
+                    false
+                )), 0)::float8 AS dist_m;
+            """
+            cur.execute(q, (stop_a_id, stop_b_id))
+            r = cur.fetchone()
+            d = float(r[0] or 0.0)
+            if d > 1.0:
+                return d
+            # Fallback to geodesic distance
+            q2 = """
+                SELECT ST_Distance(
+                    (SELECT geom_4326 FROM stop WHERE stop_id = %s)::geography,
+                    (SELECT geom_4326 FROM stop WHERE stop_id = %s)::geography
+                )::float8;
+            """
+            cur.execute(q2, (stop_a_id, stop_b_id))
+            r2 = cur.fetchone()
+            return float(r2[0] or 0.0)
+        else:
+            q = """
+                SELECT ST_Distance(
+                    (SELECT geom_4326 FROM stop WHERE stop_id = %s)::geography,
+                    (SELECT geom_4326 FROM stop WHERE stop_id = %s)::geography
+                )::float8;
+            """
+            cur.execute(q, (stop_a_id, stop_b_id))
+            r = cur.fetchone()
+            return float(r[0] or 0.0)
+    except Exception:
+        return 0.0
+    finally:
+        try:
+            conn.close()
+        except Exception:
+            pass
+
+def compute_walk_meters_point_to_point(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    """مسافة المشي عبر الشبكة بين نقطتين (lat/lon) باستخدام أقرب رءوس للطرق.
+    إن لم تتوفر شبكة أو لا يوجد مسار، نرجع المسافة الجيوديسية."""
+    conn = get_db_connection()
+    if not conn:
+        return 0.0
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT to_regclass('public.ways');")
+        has_routing = cur.fetchone()[0] is not None
+
+        if has_routing:
+            q = """
+                SELECT COALESCE((SELECT SUM(cost) FROM pgr_dijkstra(
+                    'SELECT gid as id, source, target, cost, reverse_cost FROM ways',
+                    (SELECT id FROM ways_vertices_pgr ORDER BY the_geom <-> ST_SetSRID(ST_Point(%s, %s), 4326) LIMIT 1),
+                    (SELECT id FROM ways_vertices_pgr ORDER BY the_geom <-> ST_SetSRID(ST_Point(%s, %s), 4326) LIMIT 1),
+                    false
+                )), 0)::float8 AS dist_m;
+            """
+            cur.execute(q, (lon1, lat1, lon2, lat2))
+            r = cur.fetchone()
+            d = float(r[0] or 0.0)
+            if d > 1.0:
+                return d
+        # Fallback geodesic
+        q2 = """
+            SELECT ST_Distance(
+                ST_SetSRID(ST_Point(%s, %s), 4326)::geography,
+                ST_SetSRID(ST_Point(%s, %s), 4326)::geography
+            )::float8;
+        """
+        cur.execute(q2, (lon1, lat1, lon2, lat2))
+        r2 = cur.fetchone()
+        return float(r2[0] or 0.0)
     except Exception:
         return 0.0
     finally:

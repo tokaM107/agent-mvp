@@ -49,11 +49,12 @@ def normalize_arabic(text):
     if not text: return ""
     text = text.strip()
     text = text.replace("أ", "ا").replace("إ", "ا").replace("آ", "ا").replace("ة", "ه")
-    
-    # إزالة اللواصق (لـ، بـ، الـ)
-    if text.startswith("ال") and len(text) > 3: text = text[2:]
-    if text.startswith("ل") and len(text) > 3: text = text[1:]
-    if text.startswith("ب") and len(text) > 3: text = text[1:]
+    # إزالة اللواصق في البداية (ل، ب، و، الـ) بما فيها التكرار زي "لل"
+    while len(text) > 3 and (text.startswith("ال") or text[0] in ["ل", "ب", "و"]):
+        if text.startswith("ال"):
+            text = text[2:]
+        else:
+            text = text[1:]
     
     return text
 
@@ -137,18 +138,7 @@ def run_agent(user_query: str):
         d_geo = geocode_address(dest_en)
 
     # 4. FIND JOURNEYS
-    # Walking logic: Access Walk + (Transit Walk from DB if any) + Egress Walk
-    access_walk = 0
-    egress_walk = 0
-    try:
-        if "error" not in o_geo:
-            access_walk = int(compute_walk_meters_point_to_stop(o_geo["lat"], o_geo["lon"], int(src["stop_id"])) or 0)
-        if "error" not in d_geo:
-            egress_walk = int(compute_walk_meters_point_to_stop(d_geo["lat"], d_geo["lon"], int(dst["stop_id"])) or 0)
-    except Exception:
-        # fallback to 0 if any issue
-        access_walk = int(src.get('distance_m', 0) or 0)
-        egress_walk = int(dst.get('distance_m', 0) or 0)
+    # We'll compute access/egress per-option using each option's first/last stop ids.
 
     raw_journeys = find_journeys_db(src["stop_id"], dst["stop_id"])
 
@@ -160,13 +150,22 @@ def run_agent(user_query: str):
     
     # Calculate min values for tagging
     all_prices = [j["costs"]["money"] for j in raw_journeys]
-    all_walks = [j["costs"]["walk"] + access_walk + egress_walk for j in raw_journeys]
+    # Temp placeholder; we will recompute per-option walks below
+    all_walks = [j["costs"]["walk"] for j in raw_journeys]
     
     min_price = min(all_prices) if all_prices else 0
     min_walk = min(all_walks) if all_walks else 0
     
     for j in raw_journeys:
-        # Total Walk = Access + Transit (pgRouting) + Egress
+        # Per-option walk: Access (origin point -> first stop) + Transit Walk + Egress (last stop -> dest point)
+        first_stop = j.get("stops_path", [src["stop_id"]])[0]
+        last_stop = j.get("stops_path", [dst["stop_id"]])[-1]
+        try:
+            access_walk = 0 if "error" in o_geo else int(compute_walk_meters_point_to_stop(o_geo["lat"], o_geo["lon"], int(first_stop)) or 0)
+            egress_walk = 0 if "error" in d_geo else int(compute_walk_meters_point_to_stop(d_geo["lat"], d_geo["lon"], int(last_stop)) or 0)
+        except Exception:
+            access_walk = int(src.get('distance_m', 0) or 0)
+            egress_walk = int(dst.get('distance_m', 0) or 0)
         total_walk = j["costs"]["walk"] + access_walk + egress_walk
         total_price = j["costs"]["money"]
         transfers = max(0, len(j["path"]) - 1)
@@ -188,6 +187,22 @@ def run_agent(user_query: str):
             "transfers": transfers,
             "tags": " - ".join(tags) if tags else "رحلة عادية"
         })
+
+    # 6.1 Add pure walking option (network if available, else geodesic)
+    try:
+        if "error" not in o_geo and "error" not in d_geo:
+            walk_only_m = compute_walk_meters_point_to_point(o_geo["lat"], o_geo["lon"], d_geo["lat"], d_geo["lon"]) or 0
+            enhanced_journeys.append({
+                "routes": ["مشي"],
+                "price": 0.0,
+                "walk_meters": int(walk_only_m),
+                "access_walk_m": int(walk_only_m),
+                "egress_walk_m": 0,
+                "transfers": 0,
+                "tags": "مشي فقط"
+            })
+    except Exception:
+        pass
 
     # 6. FINAL GEMINI RESPONSE
     system_instruction = """
