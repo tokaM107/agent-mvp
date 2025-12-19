@@ -126,17 +126,13 @@ def get_known_price_for_route(route_id: int) -> float | None:
     return None
 
 def search_stop_by_name_db(name: str, limit: int = 5):
-    """
-    بحث دقيق لتقليل العشوائية:
-    1. ILIKE: يبحث عن تطابق دقيق أو جزئي (Exact/Partial).
-    2. pg_trgm: يستخدم فقط كملاذ أخير لو ملقاش حاجة.
-    """
+    
     conn = get_db_connection()
     if not conn: return []
     try:
         cur = conn.cursor()
         
-        # 1. البحث الدقيق (الأولوية)
+        # Exact match first
         q_exact = """
             SELECT stop_id, name, ST_X(geom_4326), ST_Y(geom_4326)
             FROM stop 
@@ -150,7 +146,7 @@ def search_stop_by_name_db(name: str, limit: int = 5):
         if rows:
             return [{"stop_id": r[0], "name": r[1], "lon": float(r[2]), "lat": float(r[3])} for r in rows]
 
-        # 2. البحث المرن (Fuzzy) باستخدام similarity لتفادي مشاكل عامل %
+        # Fuzzy search fallback
         cur.execute("CREATE EXTENSION IF NOT EXISTS pg_trgm;")
         q_fuzzy = """
             SELECT stop_id, name, ST_X(geom_4326), ST_Y(geom_4326), similarity(name, %s) as score
@@ -174,7 +170,8 @@ def get_nearest_stop_db(lat: float, lon: float):
     if not conn: return None
     try:
         cur = conn.cursor()
-        # يبحث عن أقرب محطة في دائرة 1 كم
+        
+        # Find nearest stop within 1km
         q = """
             SELECT stop_id, name, 
                    ST_Distance(geom_4326::geography, ST_SetSRID(ST_Point(%s, %s), 4326)::geography) as dist_m
@@ -189,13 +186,13 @@ def get_nearest_stop_db(lat: float, lon: float):
     finally: conn.close()
 
 def predict_trip_price(distance_km: float) -> float:
-    """يتوقع سعر الرحلة من خلال النموذج بناءً على مسافة الرحلة بالكيلومترات."""
+#predict price using only distance (log-transformed) with the loaded model
     if PRICE_MODEL is None:
         raise RuntimeError("Price model not loaded")
     return float(PRICE_MODEL.predict([distance_km])[0])
 
 def get_route_cost_db(route_id: int) -> float:
-    """يقرأ السعر المسجل للخط من جدول route كحل بديل لو الموديل مش متاح."""
+    #read known cost for route from route table as fallback if model not available
     conn = get_db_connection()
     if not conn:
         return 0.0
@@ -215,11 +212,7 @@ def get_route_cost_db(route_id: int) -> float:
             pass
 
 def get_route_details_db(route_id: int) -> dict:
-    """يجمع خصائص الخط من قاعدة البيانات:
-    - distance_km: طول الخط بالكيلومترات (من route_geometry إن توفر، وإلا من توقفات الرحلة)
-    - stops_count: عدد المحطات في رحلة نموذجية للخط
-    - route_type: نوع المواصلات من route.mode
-    """
+    """Fetch route details: distance_km, stops_count, route_type (mode)"""
     conn = get_db_connection()
     if not conn:
         return {"distance_km": 0.0, "stops_count": 0, "route_type": "unknown"}
@@ -280,9 +273,7 @@ def get_route_details_db(route_id: int) -> dict:
             pass
 
 def predict_trip_price_from_features(distance_km: float, stops_count: int, route_type: str) -> float:
-    """توقع السعر باستخدام خصائص الخط الفعلية مع تحويل لوغاريتمي للمسافة.
-    يعتمد على نموذج joblib المدرّب في PredictPrices_logDISTANCE+TransportType.ipynb.
-    """
+    #predict price using actual route features with log-transformed distance
     if PRICE_MODEL is None:
         raise RuntimeError("Price model not loaded")
     # Prepare features; include both raw and log distance to be robust to training config
@@ -318,10 +309,7 @@ def decode_route_from_db(route_id):
     return arabize_text(name)
 
 def find_journeys_db(origin_stop_id: int, dest_stop_id: int, max_results: int = 5) -> List[Journey]:
-    """
-    يبحث عن مسارات (مباشر، 1 تبديل، 2 تبديل، 3 تبديلات) + مشي.
-    ويقوم بالترتيب النهائي لضمان عدم ضياع المسارات الجيدة.
-    """
+    # Find journey options between two stop IDs from the DB
     conn = get_db_connection()
     if not conn: return []
     results = []
@@ -334,7 +322,7 @@ def find_journeys_db(origin_stop_id: int, dest_stop_id: int, max_results: int = 
         walk_query = ""
         walk_params = []
         if has_routing:
-            # حساب المشي الحقيقي بـ pgRouting
+            # Calculate real walking distance using pgRouting
             walk_query = """
             UNION ALL
             SELECT 'WALK'::text, 0::numeric,
@@ -348,7 +336,7 @@ def find_journeys_db(origin_stop_id: int, dest_stop_id: int, max_results: int = 
             """
             walk_params = [origin_stop_id, dest_stop_id, origin_stop_id, dest_stop_id]
         
-        # استعلام SQL ضخم يجمع كل الاحتمالات (حتى 3 تبديلات)
+        # Large SQL query combining all possibilities (up to 3 transfers)
         internal_limit = max(max_results * 10, 50)
         q = f"""
             SELECT * FROM (
@@ -487,7 +475,7 @@ def find_journeys_db(origin_stop_id: int, dest_stop_id: int, max_results: int = 
     return results
 
 def arabize_text(text: str) -> str:
-    """تعريب أسماء الخطوط الشائعة لتحسين عرض الرد النهائي."""
+    #arabize common route names for better final response display
     if not text:
         return text
     mapping = {
@@ -515,8 +503,7 @@ def arabize_text(text: str) -> str:
     return ' - '.join(arabized)
 
 def compute_walk_meters_point_to_stop(lat: float, lon: float, stop_id: int) -> float:
-    """يحسب مسافة المشي من نقطة (lat, lon) لأقرب نقطة وصول لمحطة stop_id باستخدام pgRouting إن توفرت.
-    fallback: ST_Distance على الجيوديسك."""
+    #
     conn = get_db_connection()
     if not conn:
         return 0.0
@@ -539,7 +526,6 @@ def compute_walk_meters_point_to_stop(lat: float, lon: float, stop_id: int) -> f
             d = float(r[0] or 0.0)
             if d > 1.0:
                 return d
-            # fallback لو المسار غير متصل
             q2 = """
                 SELECT ST_Distance(
                     ST_SetSRID(ST_Point(%s, %s), 4326)::geography,
@@ -568,8 +554,7 @@ def compute_walk_meters_point_to_stop(lat: float, lon: float, stop_id: int) -> f
             pass
 
 def compute_path_meters_between_stops(stop_a_id: int, stop_b_id: int) -> float:
-    """يحسِب مسافة الطريق (بالأمتار) بين محطتين عبر شبكة الطرق باستخدام pgRouting،
-    مع fallback للمسافة الجيوديسية إذا لم توجد مسارات متصلة."""
+    
     conn = get_db_connection()
     if not conn:
         return 0.0
@@ -621,8 +606,7 @@ def compute_path_meters_between_stops(stop_a_id: int, stop_b_id: int) -> float:
             pass
 
 def compute_walk_meters_point_to_point(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
-    """مسافة المشي عبر الشبكة بين نقطتين (lat/lon) باستخدام أقرب رءوس للطرق.
-    إن لم تتوفر شبكة أو لا يوجد مسار، نرجع المسافة الجيوديسية."""
+    
     conn = get_db_connection()
     if not conn:
         return 0.0

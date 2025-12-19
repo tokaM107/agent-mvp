@@ -212,5 +212,5 @@ def run_agent(user_query: str):
         return str(enhanced_journeys)
 
 if __name__ == "__main__":
-    q = "عايز اروح من العصافرة للموقف الجديد  "
+    q = "عايز اروح من العصافرة للكيلو 21  "
     print(run_agent(q))
