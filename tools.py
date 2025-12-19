@@ -6,6 +6,7 @@ import psycopg2
 import time
 from models.trip_price_class import TripPricePredictor, load_model
 from typing import TypedDict, List
+import numpy as np
 import pandas as pd
 
 # --- FIX: Handle the typo in the saved model file ---
@@ -59,6 +60,70 @@ def geocode_address(address: str) -> dict:
     except:
         pass
     return {"error": "Location not found"}
+
+# -------- Known Prices (DirectKnownPrices.csv) --------
+_KNOWN_PRICE_BY_GTFS: dict = {}
+_KNOWN_PRICE_BY_NAME: dict = {}
+
+def _load_known_prices():
+    global _KNOWN_PRICE_BY_GTFS, _KNOWN_PRICE_BY_NAME
+    try:
+        csv_path = os.path.join(os.getcwd(), 'DirectKnownPrices.csv')
+        if not os.path.exists(csv_path):
+            # try relative to project root if running from subfolder
+            alt = os.path.abspath(os.path.join(os.path.dirname(__file__), 'DirectKnownPrices.csv'))
+            csv_path = alt if os.path.exists(alt) else csv_path
+        df = pd.read_csv(csv_path)
+        # normalize
+        if 'Price' not in df.columns:
+            return
+        df['Price'] = pd.to_numeric(df['Price'], errors='coerce')
+        df = df.dropna(subset=['Price'])
+        # group by GTFS route_id
+        if 'route_id' in df.columns:
+            g = df.groupby('route_id')['Price'].median()
+            _KNOWN_PRICE_BY_GTFS = g.to_dict()
+        # group by long name
+        name_col = 'route_long_name_x' if 'route_long_name_x' in df.columns else 'route_long_name'
+        if name_col in df.columns:
+            g2 = df.groupby(name_col)['Price'].median()
+            _KNOWN_PRICE_BY_NAME = g2.to_dict()
+        print(f"✅ Loaded known prices: {len(_KNOWN_PRICE_BY_GTFS)} by GTFS id, {len(_KNOWN_PRICE_BY_NAME)} by name")
+    except Exception as e:
+        print(f"⚠️ Warning: Could not load DirectKnownPrices.csv: {e}")
+
+_load_known_prices()
+
+def get_route_identity(route_id: int) -> dict:
+    """Fetch GTFS route id and name for a DB route_id."""
+    conn = get_db_connection()
+    if not conn:
+        return {'gtfs_route_id': None, 'name': None}
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT gtfs_route_id, name FROM route WHERE route_id = %s", (route_id,))
+        r = cur.fetchone()
+        if not r:
+            return {'gtfs_route_id': None, 'name': None}
+        return {'gtfs_route_id': r[0], 'name': r[1]}
+    except Exception:
+        return {'gtfs_route_id': None, 'name': None}
+    finally:
+        try:
+            conn.close()
+        except Exception:
+            pass
+
+def get_known_price_for_route(route_id: int) -> float | None:
+    """Return known price for this route if present in DirectKnownPrices.csv."""
+    ident = get_route_identity(route_id)
+    gtfs_id = ident.get('gtfs_route_id')
+    name = ident.get('name')
+    if gtfs_id and gtfs_id in _KNOWN_PRICE_BY_GTFS:
+        return float(_KNOWN_PRICE_BY_GTFS[gtfs_id])
+    if name and name in _KNOWN_PRICE_BY_NAME:
+        return float(_KNOWN_PRICE_BY_NAME[name])
+    return None
 
 def search_stop_by_name_db(name: str, limit: int = 5):
     """
@@ -148,6 +213,95 @@ def get_route_cost_db(route_id: int) -> float:
             conn.close()
         except Exception:
             pass
+
+def get_route_details_db(route_id: int) -> dict:
+    """يجمع خصائص الخط من قاعدة البيانات:
+    - distance_km: طول الخط بالكيلومترات (من route_geometry إن توفر، وإلا من توقفات الرحلة)
+    - stops_count: عدد المحطات في رحلة نموذجية للخط
+    - route_type: نوع المواصلات من route.mode
+    """
+    conn = get_db_connection()
+    if not conn:
+        return {"distance_km": 0.0, "stops_count": 0, "route_type": "unknown"}
+    try:
+        cur = conn.cursor()
+
+        # route_type (mode)
+        cur.execute("SELECT COALESCE(mode, 'unknown') FROM route WHERE route_id = %s", (route_id,))
+        r_mode = cur.fetchone()
+        route_type = (r_mode[0] if r_mode else 'unknown') or 'unknown'
+
+        # Prefer geometry length if available
+        cur.execute(
+            """
+            SELECT COALESCE(ST_Length(geom_22992), ST_Length(ST_Transform(geom_4326,22992)))::float8
+            FROM route_geometry WHERE route_id = %s
+            ORDER BY route_geom_id ASC LIMIT 1
+            """,
+            (route_id,)
+        )
+        r_len = cur.fetchone()
+        length_m = float(r_len[0]) if r_len and r_len[0] is not None else None
+
+        # Find a sample trip on this route
+        cur.execute("SELECT trip_id FROM trip WHERE route_id = %s ORDER BY trip_id ASC LIMIT 1", (route_id,))
+        r_trip = cur.fetchone()
+        sample_trip_id = int(r_trip[0]) if r_trip else None
+
+        stops_count = 0
+        if sample_trip_id:
+            cur.execute("SELECT COUNT(*) FROM route_stop WHERE trip_id = %s", (sample_trip_id,))
+            stops_count = int(cur.fetchone()[0])
+
+        # If no geometry length, approximate by summing adjacent stop distances for the sample trip
+        if length_m is None and sample_trip_id:
+            cur.execute(
+                """
+                SELECT SUM(ST_Distance(s1.geom_22992, s2.geom_22992))::float8
+                FROM route_stop rs1
+                JOIN route_stop rs2 ON rs2.trip_id = rs1.trip_id AND rs2.stop_sequence = rs1.stop_sequence + 1
+                JOIN stop s1 ON s1.stop_id = rs1.stop_id
+                JOIN stop s2 ON s2.stop_id = rs2.stop_id
+                WHERE rs1.trip_id = %s
+                """,
+                (sample_trip_id,)
+            )
+            r_sum = cur.fetchone()
+            length_m = float(r_sum[0]) if r_sum and r_sum[0] is not None else 0.0
+
+        distance_km = float(length_m or 0.0) / 1000.0
+        return {"distance_km": distance_km, "stops_count": stops_count, "route_type": route_type}
+    except Exception:
+        return {"distance_km": 0.0, "stops_count": 0, "route_type": "unknown"}
+    finally:
+        try:
+            conn.close()
+        except Exception:
+            pass
+
+def predict_trip_price_from_features(distance_km: float, stops_count: int, route_type: str) -> float:
+    """توقع السعر باستخدام خصائص الخط الفعلية مع تحويل لوغاريتمي للمسافة.
+    يعتمد على نموذج joblib المدرّب في PredictPrices_logDISTANCE+TransportType.ipynb.
+    """
+    if PRICE_MODEL is None:
+        raise RuntimeError("Price model not loaded")
+    # Prepare features; include both raw and log distance to be robust to training config
+    distance_km = max(float(distance_km), 0.0)
+    features = pd.DataFrame([
+        {
+            'distance_km': distance_km,
+            'distance_km_log': float(np.log1p(distance_km)),
+            'stops_count': int(stops_count or 0),
+            'route_type': (route_type or 'unknown')
+        }
+    ])
+    try:
+        # Use underlying sklearn model directly, then apply bus rounding style
+        raw = PRICE_MODEL.model.predict(features)
+        return float(PRICE_MODEL._round_bus_style(raw)[0])
+    except Exception:
+        # Fallback to wrapper single-distance predict if pipeline expects only distance
+        return float(PRICE_MODEL.predict([distance_km])[0])
 
 def decode_route_from_db(route_id):
     if str(route_id) == 'WALK': return "مشي"
@@ -295,19 +449,24 @@ def find_journeys_db(origin_stop_id: int, dest_stop_id: int, max_results: int = 
             stop_ids = [int(s) for s in stops_path.split(',') if s]
             
             for p in paths:
-                if p == 'WALK': continue
-                # use distance-based model per leg
+                if p == 'WALK':
+                    continue
+                rid = int(p)
+                # 1) prefer known price from CSV
+                known = get_known_price_for_route(rid)
+                if known is not None:
+                    total_price += float(known)
+                    continue
+                # 2) else use model on real features
                 try:
-                    leg_prices = []
-                    for i in range(len(stop_ids) - 1):
-                        dist_m = compute_path_meters_between_stops(stop_ids[i], stop_ids[i+1])
-                        dist_km = max(dist_m / 1000.0, 0.01)
-                        leg_prices.append(predict_trip_price(dist_km))
-                    total_price = float(sum(leg_prices))
+                    details = get_route_details_db(rid)
+                    price = predict_trip_price_from_features(
+                        details['distance_km'], details['stops_count'], details['route_type']
+                    )
+                    total_price += float(price or 0.0)
                 except Exception:
-                    # fallback to DB aggregated money
-                    total_price = float(money_db or 0.0)
-                break
+                    # 3) fallback to DB route cost
+                    total_price += float(get_route_cost_db(rid) or 0.0)
             
             results.append({
                 "path": paths,

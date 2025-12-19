@@ -11,7 +11,7 @@ load_dotenv()
 # --- CONFIGURATION ---
 API_KEY = os.environ.get("GOOGLE_API_KEY")
 if not API_KEY:
-    print("⚠️  WARNING: GOOGLE_API_KEY is not set!")
+    print(" WARNING: GOOGLE_API_KEY is not set!")
 
 genai.configure(api_key=API_KEY)
 
@@ -45,11 +45,9 @@ ARABIC_TO_ENGLISH = {
 }
 
 def normalize_arabic(text):
-    """تنظيف النص العربي لضمان البحث في القاموس"""
     if not text: return ""
     text = text.strip()
     text = text.replace("أ", "ا").replace("إ", "ا").replace("آ", "ا").replace("ة", "ه")
-    # إزالة اللواصق في البداية (ل، ب، و، الـ) بما فيها التكرار زي "لل"
     while len(text) > 3 and (text.startswith("ال") or text[0] in ["ل", "ب", "و"]):
         if text.startswith("ال"):
             text = text[2:]
@@ -59,24 +57,19 @@ def normalize_arabic(text):
     return text
 
 def get_english_name(arabic_name):
-    """ترجمة الاسم العربي للإنجليزي"""
-    # 1. بحث مباشر
     if arabic_name in ARABIC_TO_ENGLISH: return ARABIC_TO_ENGLISH[arabic_name]
     
-    # 2. بحث بعد التنظيف
     norm = normalize_arabic(arabic_name)
     for k, v in ARABIC_TO_ENGLISH.items():
         if normalize_arabic(k) == norm:
             return v
     
-    # 3. لو مفيش، رجعه زي ما هو (للبحث الـ Fuzzy)
     return arabic_name 
 
 def run_agent(user_query: str):
     print(f"🔍 Analyzing: {user_query}")
 
     # 1. GEMINI PARSING (Extraction Only)
-    # جيميناي هنا دوره بس يطلع "المكان" من وسط كلام اليوزر
     parse_prompt = f"""
     You are a parser. Extract origin and destination from this Arabic query.
     Return strictly JSON: {{"origin": "...", "destination": "..."}}
@@ -141,6 +134,8 @@ def run_agent(user_query: str):
     # We'll compute access/egress per-option using each option's first/last stop ids.
 
     raw_journeys = find_journeys_db(src["stop_id"], dst["stop_id"])
+    # Remove WALK-only options from replay
+    raw_journeys = [j for j in raw_journeys if not (len(j.get("path", [])) == 1 and j["path"][0] == "WALK")]
 
     if not raw_journeys:
         return "🚫 للاسف مفيش مسارات مسجلة بين النقطتين دول حالياً."
@@ -188,21 +183,7 @@ def run_agent(user_query: str):
             "tags": " - ".join(tags) if tags else "رحلة عادية"
         })
 
-    # 6.1 Add pure walking option (network if available, else geodesic)
-    try:
-        if "error" not in o_geo and "error" not in d_geo:
-            walk_only_m = compute_walk_meters_point_to_point(o_geo["lat"], o_geo["lon"], d_geo["lat"], d_geo["lon"]) or 0
-            enhanced_journeys.append({
-                "routes": ["مشي"],
-                "price": 0.0,
-                "walk_meters": int(walk_only_m),
-                "access_walk_m": int(walk_only_m),
-                "egress_walk_m": 0,
-                "transfers": 0,
-                "tags": "مشي فقط"
-            })
-    except Exception:
-        pass
+    # Note: Pure walking option intentionally omitted from user-facing options per request
 
     # 6. FINAL GEMINI RESPONSE
     system_instruction = """
@@ -210,12 +191,13 @@ def run_agent(user_query: str):
     مهمتك: صياغة الرد النهائي لليوزر بناءً على البيانات المقدمة فقط.
     
     القواعد:
-    1. اتكلم بلهجة مصرية ودودة.
+    1. اتكلم بلهجة مصرية ودودة وبالعربي فقط.
     2. اعرض الخيارات بوضوح (الخيار الأول، الثاني..).
     3. ركز على "الوصف" (ده الأوفر، ده الأسرع..).
     4. اشرح المسار: "هتمشي {access_walk_m} متر وتاخد كذا.. وتنزل تمشي {egress_walk_m} متر".
     5. اكتب السعر والمشي بدقة من البيانات.
-    6. لو المسار مشي فقط، قول "المسافة قريبة، تمشاها أحسن".
+    6. متذكرش خيار "مشي فقط" في الرد.
+    7. اختم بجملة ودودة قصيرة مناسبة لركاب إسكندرية، زي: "توصل بالسلامة    ".
     """
     
     user_data = f"""
@@ -230,5 +212,5 @@ def run_agent(user_query: str):
         return str(enhanced_journeys)
 
 if __name__ == "__main__":
-    q = "عايز اروح من العصافرة للكيلو 21 "
+    q = "عايز اروح من العصافرة للموقف الجديد  "
     print(run_agent(q))
