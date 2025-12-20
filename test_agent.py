@@ -15,7 +15,7 @@ def timeout_handler(signum, frame):
 
 # Note: signal.alarm only works on Unix. For Windows, we'll catch KeyboardInterrupt
 try:
-    user_query = os.getenv("TEST_QUERY", "أريد الذهاب من الموقف الجديد إلى العصافرة")
+    user_query = os.getenv("TEST_QUERY", "أريد الذهاب من الموقف الجديد إلى سيدي جابر")
     print("Starting agent... (Press Ctrl+C if it hangs)")
     output = run_once_server(user_query)
     print("\n" + "="*60)

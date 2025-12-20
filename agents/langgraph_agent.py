@@ -141,6 +141,60 @@ def node_route(state: AgentState) -> AgentState:
     return state
 
 
+def _gemini_polish(text: str) -> str:
+    """Polish the response with a friendly Egyptian tone using Gemini"""
+    try:
+        api_key = os.getenv("GEMINI_API_KEY")
+        if not api_key:
+            return text
+        
+        # Try new google.genai first
+        try:
+            import google.genai as genai
+            genai.configure(api_key=api_key)
+            resp = genai.GenerativeModel("gemini-1.5-flash").generate_content(
+                (
+                    "أنت مساعد مصري ودود. أعد صياغة النص التالي بطريقة ودودة ومصرية حلوة، "
+                    "استعمل تعبيرات مثل 'يا باشا'، 'يا أسطى'، 'ربنا يسهّلك'، 'رحلة آمنة'، 'إن شاء الله توصل بالسلامة'. "
+                    "احتفظ بجميع المعلومات الفعلية (الأسعار، الأوقات، المسارات) كما هي تمامًا ولا تغير أي رقم أو اسم مكان. "
+                    "فقط حسّن الأسلوب واجعل النبرة أكثر ودًا. لا تضف كلمات زيادة ولا تحذف معلومات.\n\n"
+                    f"النص:\n{text}"
+                ),
+                request_options={"retry": None, "timeout": 25}
+            )
+            polished = getattr(resp, "text", "").strip()
+            if polished:
+                return polished
+        except Exception:
+            pass
+        
+        # Fallback to deprecated google.generativeai
+        try:
+            import google.generativeai as genai_legacy
+            genai_legacy.configure(api_key=api_key)
+            model = genai_legacy.GenerativeModel("gemini-1.5-flash")
+            resp = model.generate_content(
+                (
+                    "أنت مساعد مصري ودود. أعد صياغة النص التالي بطريقة ودودة ومصرية حلوة، "
+                    "استعمل تعبيرات مثل 'يا باشا'، 'يا أسطى'، 'ربنا يسهّلك'، 'رحلة آمنة'، 'إن شاء الله توصل بالسلامة'. "
+                    "احتفظ بجميع المعلومات الفعلية (الأسعار، الأوقات، المسارات) كما هي تمامًا ولا تغير أي رقم أو اسم مكان. "
+                    "فقط حسّن الأسلوب واجعل النبرة أكثر ودًا. لا تضف كلمات زيادة ولا تحذف معلومات.\n\n"
+                    f"النص:\n{text}"
+                ),
+                request_options={"timeout": 25}
+            )
+            polished = resp.text.strip()
+            if polished:
+                return polished
+        except Exception:
+            pass
+        
+    except Exception:
+        pass
+    
+    return text
+
+
 def _format_response(resp: Dict[str, Any], origin: str, dest: str) -> str:
     if not resp or resp.get("num_journeys", 0) == 0:
         return "لم يتم العثور على رحلات مناسبة بالقرب من نقطتي البداية أو النهاية ضمن مسافة المشي المحددة."
@@ -179,7 +233,10 @@ def node_format(state: AgentState) -> AgentState:
         return state
     origin = state.get("origin") or ""
     dest = state.get("destination") or ""
-    state["formatted"] = _format_response(resp, origin, dest)
+    raw_formatted = _format_response(resp, origin, dest)
+    # Polish with friendly Egyptian tone
+    polished = _gemini_polish(raw_formatted)
+    state["formatted"] = polished
     return state
 
 

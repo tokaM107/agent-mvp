@@ -1,0 +1,22 @@
+# Agent dependencies
+langgraph>=0.2.0
+langchain>=0.3.0
+python-dotenv>=1.0.0
+
+# Gemini AI
+google-genai>=1.0.0
+google-generativeai>=0.8.0
+
+# gRPC
+grpcio>=1.60.0
+grpcio-tools>=1.60.0
+
+# Geocoding
+geopy>=2.4.0
+
+# Data processing
+pandas>=2.0.0
+
+# OSM and graph (if still used)
+osmnx>=1.9.0
+networkx>=3.0
