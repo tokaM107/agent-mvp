@@ -1,107 +1,66 @@
-"""Simple geocode utility wrapper with Alexandria-focused fallbacks."""
+"""Hybrid geocode utility: try local GTFS stops first, then Nominatim.
+
+Respects Nominatim rate limits by using a single request with Alexandria bias.
+"""
 from geopy.geocoders import Nominatim
-from typing import List
-
-try:
-    # Optional import for better normalization
-    from services.query_parser import SYNONYMS
-except Exception:
-    SYNONYMS = {}
+from geopy.extra.rate_limiter import RateLimiter
+from typing import Optional
+import pandas as pd
+import os
 
 
-def _alex_viewbox():
-    # [min_lon, min_lat, max_lon, max_lat] roughly around Alexandria
-    return [29.75, 31.10, 30.15, 31.35]
+# Load local stops dataset once (GTFS)
+_STOPS_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "stops.txt")
+_STOPS_DF = None
+if os.path.exists(_STOPS_PATH):
+    try:
+        _STOPS_DF = pd.read_csv(_STOPS_PATH)
+        # Prepare lowercase column for contains search
+        if "stop_name" in _STOPS_DF.columns:
+            _STOPS_DF["_stop_name_lc"] = _STOPS_DF["stop_name"].astype(str).str.lower()
+    except Exception:
+        _STOPS_DF = None
 
 
-def _build_candidates(address: str) -> List[str]:
-    base = address.strip()
-    norm = SYNONYMS.get(base, base)
-    candidates = []
-
-    # Original and normalized
-    candidates.append(base)
-    if norm != base:
-        candidates.append(norm)
-
-    # Common transliterations and hints for known places
-    lower = norm.lower()
-    if "الموقف الجديد" in base or "mawqaf" in lower or "gedid" in lower or "gadid" in lower:
-        candidates.extend([
-            "New Bus Station",
-            "Alexandria New Bus Station",
-            "El Mawqaf El Gedid",
-            "El Mawkaf El Gedid",
-            "El Maw2af El Gedid",
-            "Mawqaf El Gedid",
-            "Maw2af El Gadid",
-        ])
-    elif "سيدي جابر" in base or "sidi" in lower and ("gaber" in lower or "gabir" in lower or "jaber" in lower):
-        candidates.extend([
-            "Sidi Gaber",
-            "Sidi Gabir",
-            "Sidi Jaber",
-            "Sidi Gaber Station",
-            "Sidi Gabir Station",
-        ])
-    elif "العصافرة" in base or "asafra" in lower or "asafera" in lower:
-        candidates.extend([
-            "Asafra",
-            "Al Asafra",
-            "Asafera",
-        ])
-
-    # Always include with city suffix
-    extended = []
-    for c in candidates:
-        extended.append(c)
-        extended.append(f"{c}, Alexandria, Egypt")
-    # De-duplicate while preserving order
-    seen = set()
-    uniq = []
-    for c in extended:
-        if c not in seen:
-            seen.add(c)
-            uniq.append(c)
-    return uniq
+def _search_local_stop(address: str) -> Optional[dict]:
+    if _STOPS_DF is None:
+        return None
+    name = address.strip().lower()
+    # First try exact-ish contains match on stop_name
+    match = _STOPS_DF[_STOPS_DF["_stop_name_lc"].str.contains(name, na=False)]
+    if not match.empty:
+        row = match.iloc[0]
+        try:
+            return {"lat": float(row["stop_lat"]), "lon": float(row["stop_lon"]), "source": "local"}
+        except Exception:
+            return None
+    return None
 
 
 def geocode_address(address: str) -> dict:
-    """Geocode an address to latitude/longitude, trying synonyms and viewbox bias."""
+    """Geocode an address to latitude/longitude.
+
+    1) Try local GTFS stops (data/stops.txt) for fast, precise station lookup.
+    2) Fallback to Nominatim with Alexandria bias and 1s RateLimiter.
+    """
+    # 1) Local stops lookup
+    local = _search_local_stop(address)
+    if local:
+        return {"lat": local["lat"], "lon": local["lon"]}
+
+    # 2) Nominatim fallback (single query, Alexandria bias)
     geolocator = Nominatim(user_agent="alex_transit_agent")
-    viewbox = _alex_viewbox()
-    candidates = _build_candidates(address)
+    geocode = RateLimiter(geolocator.geocode, min_delay_seconds=1.0)
+    query = address.strip()
+    if ("Alexandria" not in query) and ("الإسكندرية" not in query):
+        query = f"{query}, Alexandria, Egypt"
 
-    # Try with Alexandria bounding first
-    for q in candidates:
-        try:
-            loc = geolocator.geocode(
-                q,
-                exactly_one=True,
-                country_codes="eg",
-                addressdetails=False,
-                timeout=10,
-                viewbox=viewbox,
-                bounded=True,
-            )
-        except Exception:
-            loc = None
-        if loc:
-            return {"lat": float(loc.latitude), "lon": float(loc.longitude)}
+    try:
+        location = geocode(query, exactly_one=True, country_codes="eg", addressdetails=False, timeout=10)
+    except Exception:
+        location = None
 
-    # Fallback: try without viewbox
-    for q in candidates:
-        try:
-            loc = geolocator.geocode(
-                q,
-                exactly_one=True,
-                country_codes="eg",
-                addressdetails=False,
-                timeout=10,
-            )
-        except Exception:
-            loc = None
-        if loc:
-            return {"lat": float(loc.latitude), "lon": float(loc.longitude)}
-
-    return {"error": "Location not found"}
+    if location:
+        return {"lat": float(location.latitude), "lon": float(location.longitude)}
+    else:
+        return {"error": "Location not found"}

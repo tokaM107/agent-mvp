@@ -6,11 +6,11 @@ load_dotenv()
 from langchain_google_genai import ChatGoogleGenerativeAI
 from tools import geocode_address, find_route_server, format_server_journeys_for_user
 from langchain.agents import create_agent
-from services.query_parser import parse_arabic_route_query, normalize_name
 from services.geocode import geocode_address as svc_geocode
 from services.routing_client import find_route as svc_find_route
 from trip_decoder import decode_trip
 import re, json
+import google.generativeai as genai
 
 system_prompt = """
 أنت مساعد ذكي متخصص في مواصلات الإسكندرية.
@@ -35,16 +35,22 @@ tools = [geocode_address, find_route_server, format_server_journeys_for_user]
 agent = create_agent(model, tools=tools)
 
 def _llm_parse_places(query: str) -> tuple[str | None, str | None]:
-    """Try to parse origin/destination via Gemini; return None,None on failure."""
+    """Parse origin/destination via Google Generative AI directly (JSON-only)."""
     try:
+        api_key = os.environ.get("GOOGLE_API_KEY", "").strip()
+        if not api_key:
+            return None, None
+        genai.configure(api_key=api_key)
         parse_prompt = (
-            "أنت محلل نوايا. أخرج مكان الانطلاق والوصول من النص التالي وأعد JSON فقط"
-            " بدون أي كلام إضافي، استعمل المفتاحين: origin و destination. مثال: {\"origin\":\"الموقف الجديد\",\"destination\":\"العصافرة\"}.\n\n"
+            "أنت محلل نوايا. أخرج مكان الانطلاق والوصول من النص التالي وأعد JSON فقط بدون أي كلام إضافي،"
+            " استعمل المفتاحين بالإنجليزية تمامًا: origin و destination. أعِدّ JSON مضغوط سطر واحد بدون أسطر جديدة ولا تعليقات"
+            " وبدون أقواس أو تنسيق إضافي مثل ``` أو ```json. مثال دقيق: {\"origin\":\"الموقف الجديد\",\"destination\":\"العصافرة\"}.\n\n"
             f"النص: {query}"
         )
-        resp = model.invoke(parse_prompt)
-        raw = getattr(resp, "content", "") or ""
+        resp = genai.GenerativeModel("gemini-2.5-flash").generate_content(parse_prompt, request_options={"retry": None, "timeout": 20})
+        raw = getattr(resp, "text", "") or ""
         raw = re.sub(r"^```[a-zA-Z]*\n|\n```$", "", raw.strip())
+        raw = raw.strip()
         m = re.search(r"\{[\s\S]*\}", raw)
         if not m:
             return None, None
@@ -57,19 +63,20 @@ def _llm_parse_places(query: str) -> tuple[str | None, str | None]:
 
 
 def run_once_server(query: str) -> str:
-    """LLM-first parse with robust fallback, call gRPC server, format Arabic reply."""
+    """LLM-only parse, call gRPC server, format Arabic reply."""
     origin, dest = _llm_parse_places(query)
     if not origin or not dest:
-        origin, dest = parse_arabic_route_query(query)
-    if not origin or not dest:
-        return "تعذّر استخراج أماكن الانطلاق والوصول. اكتب بصيغة: من [المكان] إلى [المكان]."
+        return (
+            "تعذّر استخراج أماكن الانطلاق والوصول عبر النموذج. برجاء الكتابة بوضوح مثلاً: "
+            "'أريد الذهاب من [المكان] إلى [المكان]'."
+        )
 
-    s = svc_geocode(normalize_name(origin))
-    e = svc_geocode(normalize_name(dest))
+    s = svc_geocode(origin)
+    e = svc_geocode(dest)
     if "error" in s or "error" in e:
         return (
             "تعذّر تحديد المواقع. جرّب أسماء بديلة أو صيغة أدق.\n"
-            f"Start: {normalize_name(origin)} => {s}\nEnd  : {normalize_name(dest)} => {e}"
+            f"Start: {origin} => {s}\nEnd  : {dest} => {e}"
         )
 
     resp = svc_find_route(
