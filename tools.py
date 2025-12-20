@@ -9,7 +9,8 @@ import heapq
 from collections import deque, defaultdict
 from services.pricing import get_cost
 from trip_decoder import decode_trip
-from typing import TypedDict, List
+from typing import TypedDict, List, Dict, Any
+from services.routing_client import find_route as grpc_find_route
 
 class JourneyCosts(TypedDict):
     money: float
@@ -29,19 +30,21 @@ def set_graph(g):
 
 # @tool
 def geocode_address(address: str) -> dict:
-    """Geocode an address to latitude and longitude coordinates."""
-    geolocator = Nominatim(user_agent="my_geocoding_app")
-    location = geolocator.geocode(address)
-
-    if location:
-        return {
-            "lat": float(location.latitude),
-            "lon": float(location.longitude)
-        }
-    else:
-        return {
-            "error": "Location not found"
-        }
+    """Geocode an address using the robust Alexandria-biased resolver."""
+    try:
+        from services.geocode import geocode_address as svc_geo
+        return svc_geo(address)
+    except Exception:
+        geolocator = Nominatim(user_agent="alex_transit_agent")
+        query = f"{address}, Alexandria, Egypt"
+        try:
+            location = geolocator.geocode(query, exactly_one=True, country_codes="eg", addressdetails=False, timeout=10)
+        except Exception:
+            location = None
+        if location:
+            return {"lat": float(location.latitude), "lon": float(location.longitude)}
+        else:
+            return {"error": "Location not found"}
     
 # @tool 
 def get_nearest_node(lat: float, lon: float) -> int:
@@ -287,5 +290,62 @@ def format_journeys_for_user(journeys: List[Journey]) -> str:
 \n
 """
 
+    return output
+
+
+# New gRPC-powered tools
+
+@tool
+def find_route_server(start_address: str, end_address: str, walking_cutoff: float = 5000.0, max_transfers: int = 2) -> Dict[str, Any]:
+    """Geocode start/end, call gRPC FindRoute, and return journeys."""
+    start = geocode_address(start_address)
+    end = geocode_address(end_address)
+
+    if "error" in start or "error" in end:
+        return {"error": "تعذر تحديد المواقع. تأكد من العناوين."}
+
+    result = grpc_find_route(
+        start_lat=start["lat"],
+        start_lon=start["lon"],
+        end_lat=end["lat"],
+        end_lon=end["lon"],
+        walking_cutoff=walking_cutoff,
+        max_transfers=max_transfers,
+    )
+
+    return result
+
+
+@tool
+def format_server_journeys_for_user(route_response: Dict[str, Any]) -> str:
+    """Format gRPC route response into friendly Arabic guidance."""
+    if not route_response or route_response.get("num_journeys", 0) == 0:
+        return "لم يتم العثور على رحلات مناسبة بالقرب من نقطتي البداية أو النهاية ضمن مسافة المشي المحددة."
+
+    journeys = route_response.get("journeys", [])
+
+    output = ""
+    for i, journey in enumerate(journeys, 1):
+        path = journey.get("path", [])
+        costs = journey.get("costs", {})
+
+        readable_path = [decode_trip(t) for t in path]
+        path_text = " → ".join(readable_path) if readable_path else "(مسار غير معروف)"
+
+        money = costs.get("money", 0)
+        walk_m = int(costs.get("walk", 0))
+        time_min = int(costs.get("transport_time", 0))
+
+        output += f"""
+🔹 الرحلة {i}:
+🛣 المسار: {path_text}
+💰 السعر التقريبي: {money} جنيه
+🚶‍♂️ إجمالي المشي: {walk_m} متر
+⏱ زمن التنقل: ~{time_min} دقيقة
+
+نصيحة: اتبع هذا التسلسل من الرحلات، وإذا احتجت مساعدة أثناء الطريق اسأل عن اسم الخط المذكور بين القوسين لكل مرحلة.
+"""
+
+    output += "\nنتمنى لك رحلة موفقة!"
     return output
 

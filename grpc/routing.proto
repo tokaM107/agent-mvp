@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package routing;
+
+// The routing service definition
+service RoutingService {
+  // Health check
+  rpc HealthCheck (HealthRequest) returns (HealthResponse) {}
+  
+  // Find routes between two locations
+  rpc FindRoute (RouteRequest) returns (RouteResponse) {}
+}
+
+// Health check request (empty)
+message HealthRequest {}
+
+// Health check response
+message HealthResponse {
+  string status = 1;
+  string message = 2;
+}
+
+// Request for finding a route
+message RouteRequest {
+  double start_lon = 1;
+  double start_lat = 2;
+  double end_lon = 3;
+  double end_lat = 4;
+  int32 max_transfers = 5;
+  double walking_cutoff = 6;
+}
+
+// Cost information for a journey
+message JourneyCosts {
+  double money = 1;
+  double transport_time = 2;
+  double walk = 3;
+}
+
+// A single journey with path and costs
+message Journey {
+  repeated string path = 1;
+  JourneyCosts costs = 2;
+}
+
+// Response containing all found journeys
+message RouteResponse {
+  int32 num_journeys = 1;
+  repeated Journey journeys = 2;
+  int32 start_trips_found = 3;
+  int32 end_trips_found = 4;
+}
