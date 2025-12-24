@@ -135,7 +135,7 @@ def node_route(state: AgentState) -> AgentState:
     s = state["origin_geo"]; e = state["destination_geo"]
     resp = svc_find_route(
         start_lat=s["lat"], start_lon=s["lon"], end_lat=e["lat"], end_lon=e["lon"],
-        walking_cutoff=5000.0, max_transfers=2,
+        walking_cutoff=1000.0, max_transfers=2,
     )
     state["route_response"] = resp
     return state
